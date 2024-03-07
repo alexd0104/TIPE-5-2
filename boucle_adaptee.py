@@ -344,7 +344,6 @@ def chemin_fantome_bleu_chase (G,Coord):
     cible = vg.voisin_approximatif(G, i,j )
     [ik,jk]=cible
     cible = [ik,jk]
-    #print(cible)
     x = jr - jk
     if x > 0 :
         cible[0] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 4, abs(x))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 4, abs(x))[1])[0]
@@ -461,7 +460,6 @@ def pac_man_catch(Coord):
     res = False
     for k in range(1, 5):
         if Coord[0][0]==Coord[k][0]:
-            #print(k)
             res = True
     return res
 
@@ -495,12 +493,7 @@ def play():
     pygame.init()
     Coord = {0:[(15,9),1], 1:[(7,9),1], 2:[(9,9),1], 3:[(9,8),1],4:[(9,10),1]}
     creation_map(map1)
-    #launched = True
-    #while launched:
-        #for event in pygame.event.get():  
-         #   if event.type == pygame.QUIT:
-         #      launched = False
-    
+
     tour = 0
     surface.blit(pac_man,(9*30,15*30))
     surface.blit(fantome_rouge,(9*30,7*30))
@@ -518,18 +511,14 @@ def play():
              if event.type == pygame.QUIT:
                  launched = False
 
-        
         tour+=1 
-            
         
         if tour==1 or count==len(chemin_pm)-1:
             n= vg.random_except(0,199,Dico[Coord[0][0]])
             chemin_pm = chemin_pacman(map1, n, Coord)
             count=0
-
         count+=1
         dp= Direc[Dico[Coord[0][0]]][Dico[chemin_pm[count]]]
-        print(dp)
         ip,jp=bouger_pac_man(Coord[0][0][0], Coord[0][0][1], dp)
         Coord[0][0]=chemin_pm[count]
         Coord[0][1]=dp
@@ -544,7 +533,6 @@ def play():
             irg,jrg=bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
             Coord[1][0]=chemin_frouge[1]
             Coord[1][1]=drg
-            #print(chemin_frouge[1])
             
             chemin_frose=chemin_fantome_rose_scatter(map1,Coord)
             drs= Direc[Dico[Coord[2][0]]][Dico[chemin_frose[1]]]
@@ -599,7 +587,7 @@ def play():
         bouger_fantome_rose(irs,jrs,drs)
         bouger_fantome_bleu(ib,jb,db)
         bouger_fantome_jaune(ij,jj,dj)
-                    
+                            
         pygame.display.flip()
         #prendre un screen shot
         #if not launched:
