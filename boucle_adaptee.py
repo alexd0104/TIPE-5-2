@@ -618,3 +618,20 @@ def play():
     pygame.quit()
 
 test=play()
+
+
+def game():
+    launched=True
+    while launched:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN :
+                if event.key == pygame.K_a :
+                    play()
+                    return game()
+            if event.type == pygame.QUIT:
+                launched = False
+
+game()
+
+
+
