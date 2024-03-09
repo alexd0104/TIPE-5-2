@@ -490,7 +490,6 @@ def img_map():
 clock=pygame.time.Clock()
 
 def play():
-    pygame.init()
     Coord = {0:[(15,9),1], 1:[(7,9),1], 2:[(9,9),1], 3:[(9,8),1],4:[(9,10),1]}
     creation_map(map1)
 
@@ -503,135 +502,132 @@ def play():
     pygame.display.flip()
     
     launched=True
-    while launched and not pac_man_catch(Coord):
+    
+    while launched:
         for event in pygame.event.get():  
-             if event.type == pygame.QUIT:
-                 launched = False
-
-        tour+=1 
-        
-        n= vg.random_except(0,188,Dico[Coord[0][0]])
-        chemin_pm = chemin_pacman(map1, n, Coord)
-        dp= Direc[Dico[Coord[0][0]]][Dico[chemin_pm[1]]]
-        ip,jp=bouger_pac_man(Coord[0][0][0], Coord[0][0][1], dp)
-        Coord[0][0]=chemin_pm[1]
-        Coord[0][1]=dp
-        
-        if tour==1:
-            surface.blit(brique_noire,(9*30,15*30)) #fixe d'un bug d'affichage
-        
-        if state(tour)==0:
-            
-            chemin_frouge=chemin_fantome_rouge_scatter(map1,Coord)
-            drg= Direc[Dico[Coord[1][0]]][Dico[chemin_frouge[1]]]
-            irg,jrg=bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
-            Coord[1][0]=chemin_frouge[1]
-            if Coord[1][0] == (8,9):
-                Coord[1][1]=1
-            else :
-                Coord[1][1]=drg
-            
-            chemin_frose=chemin_fantome_rose_scatter(map1,Coord)
-            drs= Direc[Dico[Coord[2][0]]][Dico[chemin_frose[1]]]
-            irs,jrs=bouger_fantome_rose(Coord[2][0][0], Coord[2][0][1], drs)
-            Coord[2][0]=chemin_frose[1]
-            if Coord[2][0] == (8,9):
-                Coord[2][1]=1
-            else :
-                Coord[2][1]=drs
-            
-            chemin_fbleu=chemin_fantome_bleu_scatter(map1,Coord)
-            db= Direc[Dico[Coord[3][0]]][Dico[chemin_fbleu[1]]]
-            ib,jb=bouger_fantome_bleu(Coord[3][0][0], Coord[3][0][1], db)
-            Coord[3][0]=chemin_fbleu[1]
-            if Coord[3][0] == (8,9):
-                Coord[3][1]=1
-            else :
-                Coord[3][1]=db
-                
-            chemin_fjaune=chemin_fantome_jaune_scatter(map1,Coord)
-            dj= Direc[Dico[Coord[4][0]]][Dico[chemin_fjaune[1]]]
-            ij,jj=bouger_fantome_jaune(Coord[4][0][0], Coord[4][0][1], dj)
-            Coord[4][0]=chemin_fjaune[1]
-            if Coord[4][0] == (8,9):
-                Coord[4][1]=1
-            else :
-                Coord[4][1]=dj
-            
-        else :
-            chemin_frouge=chemin_fantome_rouge_chase(map1,Coord)
-            drg= Direc[Dico[Coord[1][0]]][Dico[chemin_frouge[1]]]
-            irg,jrg=bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
-            Coord[1][0]=chemin_frouge[1]
-            if Coord[1][0] == (8,9):
-                Coord[1][1]=1
-            else :
-                Coord[1][1]=drg
-            
-            chemin_frose=chemin_fantome_rose_chase(map1,Coord)
-            drs= Direc[Dico[Coord[2][0]]][Dico[chemin_frose[1]]]
-            irs,jrs=bouger_fantome_rose(Coord[2][0][0], Coord[2][0][1], drs)
-            Coord[2][0]=chemin_frose[1]
-            if Coord[2][0] == (8,9):
-                Coord[2][1]=1
-            else :
-                Coord[2][1]=drs
-            
-            chemin_fbleu=chemin_fantome_bleu_chase(map1,Coord)
-            db= Direc[Dico[Coord[3][0]]][Dico[chemin_fbleu[1]]]
-            ib,jb=bouger_fantome_bleu(Coord[3][0][0], Coord[3][0][1], db)
-            Coord[3][0]=chemin_fbleu[1]
-            if Coord[3][0] == (8,9):
-                Coord[3][1]=1
-            else :
-                Coord[3][1]=db
-                
-            chemin_fjaune=chemin_fantome_jaune_chase(map1,Coord)
-            dj= Direc[Dico[Coord[4][0]]][Dico[chemin_fjaune[1]]]
-            ij,jj=bouger_fantome_jaune(Coord[4][0][0], Coord[4][0][1], dj)
-            Coord[4][0]=chemin_fjaune[1] 
-            if Coord[4][0] == (8,9):
-                Coord[4][1]=1
-            else :
-                Coord[4][1]=dj
-        
-        pygame.display.flip()
-        #prendre un screen shot
-                    
-        #pour avoir une séquence de deux images et donc que la direction des protagonistes soit visible
-        
-        bouger_pac_man(ip,jp,dp)
-        bouger_fantome_rouge(irg,jrg,drg)
-        bouger_fantome_rose(irs,jrs,drs)
-        bouger_fantome_bleu(ib,jb,db)
-        bouger_fantome_jaune(ij,jj,dj)
-                            
-        pygame.display.flip()
-        #prendre un screen shot
-        #if not launched:
-         #   pygame.quit()
-            
-    while launched:
-        for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                launched=False
-    pygame.quit()
-
-test=play()
-
-
-def game():
-    launched=True
-    while launched:
-        for event in pygame.event.get():
+                pygame.quit()
             if event.type == pygame.KEYDOWN :
                 if event.key == pygame.K_a :
-                    play()
-                    return game()
-            if event.type == pygame.QUIT:
-                launched = False
+                    
+                    while not pac_man_catch(Coord) and launched:
+                        
+                        for event in pygame.event.get():   
+                            if event.type == pygame.QUIT:
+                                launched=False
+                        
+                        tour+=1 
+                        
+                        n= vg.random_except(0,188,Dico[Coord[0][0]])
+                        chemin_pm = chemin_pacman(map1, n, Coord)
+                        dp= Direc[Dico[Coord[0][0]]][Dico[chemin_pm[1]]]
+                        ip,jp=bouger_pac_man(Coord[0][0][0], Coord[0][0][1], dp)
+                        Coord[0][0]=chemin_pm[1]
+                        Coord[0][1]=dp
+                        
+                        if tour==1:
+                            surface.blit(brique_noire,(9*30,15*30)) #fixe d'un bug d'affichage
+                        
+                        if state(tour)==0:
+                            
+                            chemin_frouge=chemin_fantome_rouge_scatter(map1,Coord)
+                            drg= Direc[Dico[Coord[1][0]]][Dico[chemin_frouge[1]]]
+                            irg,jrg=bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
+                            Coord[1][0]=chemin_frouge[1]
+                            if Coord[1][0] == (8,9):
+                                Coord[1][1]=1
+                            else :
+                                Coord[1][1]=drg
+                            
+                            chemin_frose=chemin_fantome_rose_scatter(map1,Coord)
+                            drs= Direc[Dico[Coord[2][0]]][Dico[chemin_frose[1]]]
+                            irs,jrs=bouger_fantome_rose(Coord[2][0][0], Coord[2][0][1], drs)
+                            Coord[2][0]=chemin_frose[1]
+                            if Coord[2][0] == (8,9):
+                                Coord[2][1]=1
+                            else :
+                                Coord[2][1]=drs
+                            
+                            chemin_fbleu=chemin_fantome_bleu_scatter(map1,Coord)
+                            db= Direc[Dico[Coord[3][0]]][Dico[chemin_fbleu[1]]]
+                            ib,jb=bouger_fantome_bleu(Coord[3][0][0], Coord[3][0][1], db)
+                            Coord[3][0]=chemin_fbleu[1]
+                            if Coord[3][0] == (8,9):
+                                Coord[3][1]=1
+                            else :
+                                Coord[3][1]=db
+                                
+                            chemin_fjaune=chemin_fantome_jaune_scatter(map1,Coord)
+                            dj= Direc[Dico[Coord[4][0]]][Dico[chemin_fjaune[1]]]
+                            ij,jj=bouger_fantome_jaune(Coord[4][0][0], Coord[4][0][1], dj)
+                            Coord[4][0]=chemin_fjaune[1]
+                            if Coord[4][0] == (8,9):
+                                Coord[4][1]=1
+                            else :
+                                Coord[4][1]=dj
+                            
+                        else :
+                            chemin_frouge=chemin_fantome_rouge_chase(map1,Coord)
+                            drg= Direc[Dico[Coord[1][0]]][Dico[chemin_frouge[1]]]
+                            irg,jrg=bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
+                            Coord[1][0]=chemin_frouge[1]
+                            if Coord[1][0] == (8,9):
+                                Coord[1][1]=1
+                            else :
+                                Coord[1][1]=drg
+                            
+                            chemin_frose=chemin_fantome_rose_chase(map1,Coord)
+                            drs= Direc[Dico[Coord[2][0]]][Dico[chemin_frose[1]]]
+                            irs,jrs=bouger_fantome_rose(Coord[2][0][0], Coord[2][0][1], drs)
+                            Coord[2][0]=chemin_frose[1]
+                            if Coord[2][0] == (8,9):
+                                Coord[2][1]=1
+                            else :
+                                Coord[2][1]=drs
+                            
+                            chemin_fbleu=chemin_fantome_bleu_chase(map1,Coord)
+                            db= Direc[Dico[Coord[3][0]]][Dico[chemin_fbleu[1]]]
+                            ib,jb=bouger_fantome_bleu(Coord[3][0][0], Coord[3][0][1], db)
+                            Coord[3][0]=chemin_fbleu[1]
+                            if Coord[3][0] == (8,9):
+                                Coord[3][1]=1
+                            else :
+                                Coord[3][1]=db
+                                
+                            chemin_fjaune=chemin_fantome_jaune_chase(map1,Coord)
+                            dj= Direc[Dico[Coord[4][0]]][Dico[chemin_fjaune[1]]]
+                            ij,jj=bouger_fantome_jaune(Coord[4][0][0], Coord[4][0][1], dj)
+                            Coord[4][0]=chemin_fjaune[1] 
+                            if Coord[4][0] == (8,9):
+                                Coord[4][1]=1
+                            else :
+                                Coord[4][1]=dj
+                        
+                        pygame.display.flip()
+                        #prendre un screen shot
+                                    
+                        #pour avoir une séquence de deux images et donc que la direction des protagonistes soit visible
+                        
+                        bouger_pac_man(ip,jp,dp)
+                        bouger_fantome_rouge(irg,jrg,drg)
+                        bouger_fantome_rose(irs,jrs,drs)
+                        bouger_fantome_bleu(ib,jb,db)
+                        bouger_fantome_jaune(ij,jj,dj)
+                                            
+                        pygame.display.flip()
+                        #prendre un screen shot
+                        #if not launched:
+                         #   pygame.quit()
+                            
+                    while launched:
+                        for event in pygame.event.get():
+                            if event.type == pygame.QUIT:
+                                launched=False
+                            if event.type == pygame.KEYDOWN :
+                                if event.key == pygame.K_a :
+                                    play()
+                    pygame.quit()
 
-game()
-
+#test=play()
 
 
