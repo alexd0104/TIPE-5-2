@@ -490,6 +490,7 @@ def img_map():
 clock=pygame.time.Clock()
 
 def play():
+    pygame.init()
     Coord = {0:[(15,9),1], 1:[(7,9),1], 2:[(9,9),1], 3:[(9,8),1],4:[(9,10),1]}
     creation_map(map1)
 
