@@ -33,6 +33,9 @@ fantome_rouge=pygame.transform.scale(fantome_rouge,(30,30))
 fantome_jaune=pygame.image.load("fantome_jaune.png")
 fantome_jaune=pygame.transform.scale(fantome_jaune,(30,30))
 
+fantome_peur=pygame.image.load("fantome_peur.png")
+fantome_peur=pygame.transform.scale(fantome_peur,(30,30))
+
 pac_man=pygame.image.load("pac_man.png")
 pac_man=pygame.transform.scale(pac_man,(30,30))
 
@@ -81,6 +84,18 @@ fin_verticale_haut=pygame.transform.scale(fin_verticale_haut,(30,30))
 fin_verticale_bas=pygame.image.load("fin_verticale_bas.png")
 fin_verticale_bas=pygame.transform.scale(fin_verticale_bas,(30,30))
 
+pac_gomme=pygame.image.load("pac_gomme.png")
+pac_gomme=pygame.transform.scale(pac_gomme,(30,30))
+
+super_pac_gomme=pygame.image.load("super_pac_gomme.png")
+super_pac_gomme=pygame.transform.scale(super_pac_gomme,(30,30))
+
+cerise=pygame.image.load("cerise.png")
+cerise=pygame.transform.scale(cerise,(30,30))
+
+fraise=pygame.image.load("fraise.png")
+fraise=pygame.transform.scale(fraise,(30,30))
+
 
 map1="""1hhhhhhhhthhhhhhhh2
 v99999999v99999999v
@@ -106,7 +121,7 @@ v99999999999999999v
 
 map1=map1.splitlines()
 
-Coord = {0:[(15,9),1], 1:[(7,9),1], 2:[(9,9),1], 3:[(9,8),1],4:[(9,10),1]}
+
 #coordonnées, direction
 #pac man, rouge, rose, bleu, jaune
 
@@ -130,11 +145,21 @@ def opposite (x):
         return 2
 
 def creation_map(map1):
+    gomme = vg.gomme(map1)
     for y, line in enumerate(map1):
         for x, c in enumerate(line):
             coord=(x*30,y*30)
             if c=="9":
-                surface.blit(brique_noire,coord)
+                if gomme[(y,x)] == 0:
+                    surface.blit(brique_noire,coord)
+                if gomme[(y,x)] == 1:
+                    surface.blit(pac_gomme,coord)
+                if gomme[(y,x)] == 2:
+                    surface.blit(super_pac_gomme,coord)
+                if gomme[(y,x)] == 3:
+                    surface.blit(cerise,coord)
+                if gomme[(y,x)] == 4:
+                    surface.blit(fraise,coord)
             elif c=="8":
                 surface.blit(brique_noire,coord)
             elif c=="1":
@@ -169,14 +194,6 @@ def creation_map(map1):
 Dico=vg.dico(map1)
 Dist,Direc=vg.adjacence_distance(map1),vg.adjacence_direction(map1)
 
-
-def modif_map(G,M,D,k,i,j):
-    M2=copy.deepcopy(M)
-    D2=copy.deepcopy(D)
-    M2[Dico.get((i,j))][Dico.get((vg.prochain_sommet(G,i,j,k)))]= inf
-    D2[Dico.get((i,j))][Dico.get((vg.prochain_sommet(G,i,j,k)))]= 0
-    return M2,D2
-
 def bouger_pac_man(i,j,f):
     coord=(j*30,i*30)
     surface.blit(brique_noire,coord)
@@ -184,116 +201,147 @@ def bouger_pac_man(i,j,f):
     if f==1:
         new_coord=(j*30,(i-0.5)*30)
         surface.blit(pac_man,new_coord)
-        return i-0.5,j
+        return (i-0.5)%len(map1),j
     elif f==2:
         new_coord=((j+0.5)*30,i*30)
         surface.blit(pac_man,new_coord)
-        return i,j+0.5
+        return i,(j+0.5)%len(map1[1])
     elif f==3:
         new_coord=(j*30,(i+0.5)*30)
         surface.blit(pac_man,new_coord)
-        return i+0.5,j
+        return (i+0.5)%len(map1),j
     else:
         new_coord=((j-0.5)*30,i*30)
         surface.blit(pac_man,new_coord)
-        return i,j-0.5
+        return i,(j-0.5)%len(map1[1])
 
 def bouger_fantome_bleu(i,j,f):
-    coord=(j*30,i*30)
-    surface.blit(brique_noire,coord)
     
     if f==1:
         new_coord=(j*30,(i-0.5)*30)
         surface.blit(fantome_bleu,new_coord)
-        return i-0.5,j
+        return (i-0.5)%len(map1),j
     elif f==2:
         new_coord=((j+0.5)*30,i*30)
         surface.blit(fantome_bleu,new_coord)
-        return i,j+0.5
+        return i,(j+0.5)%len(map1[1])
     elif f==3:
         new_coord=(j*30,(i+0.5)*30)
         surface.blit(fantome_bleu,new_coord)
-        return i+0.5,j
+        return (i+0.5)%len(map1),j
     else:
         new_coord=((j-0.5)*30,i*30)
         surface.blit(fantome_bleu,new_coord)
-        return i,j-0.5
+        return i,(j-0.5)%len(map1[1])
 
 def bouger_fantome_rouge(i,j,f):
-    coord=(j*30,i*30)
-    surface.blit(brique_noire,coord)
     
     if f==1:
         new_coord=(j*30,(i-0.5)*30)
         surface.blit(fantome_rouge,new_coord)
-        return i-0.5,j
+        return (i-0.5)%len(map1),j
     elif f==2:
         new_coord=((j+0.5)*30,i*30)
         surface.blit(fantome_rouge,new_coord)
-        return i,j+0.5
+        return i,(j+0.5)%len(map1[1])
     elif f==3:
         new_coord=(j*30,(i+0.5)*30)
         surface.blit(fantome_rouge,new_coord)
-        return i+0.5,j
+        return (i+0.5)%len(map1),j
     else:
         new_coord=((j-0.5)*30,i*30)
         surface.blit(fantome_rouge,new_coord)
-        return i,j-0.5
+        return i,(j-0.5)%len(map1[1])
 
 def bouger_fantome_rose(i,j,f):
-    coord=(j*30,i*30)
-    surface.blit(brique_noire,coord)
     
     if f==1:
         new_coord=(j*30,(i-0.5)*30)
         surface.blit(fantome_rose,new_coord)
-        return i-0.5,j
+        return (i-0.5)%len(map1),j
     elif f==2:
         new_coord=((j+0.5)*30,i*30)
         surface.blit(fantome_rose,new_coord)
-        return i,j+0.5
+        return i,(j+0.5)%len(map1[1])
     elif f==3:
         new_coord=(j*30,(i+0.5)*30)
         surface.blit(fantome_rose,new_coord)
-        return i+0.5,j
+        return (i+0.5)%len(map1),j
     else:
         new_coord=((j-0.5)*30,i*30)
         surface.blit(fantome_rose,new_coord)
-        return i,j-0.5
+        return i,(j-0.5)%len(map1[1])
 
 def bouger_fantome_jaune(i,j,f):
-    coord=(j*30,i*30)
-    surface.blit(brique_noire,coord)
     
     if f==1:
         new_coord=(j*30,(i-0.5)*30)
         surface.blit(fantome_jaune,new_coord)
-        return i-0.5,j
+        return (i-0.5)%len(map1),j
     elif f==2:
         new_coord=((j+0.5)*30,i*30)
         surface.blit(fantome_jaune,new_coord)
-        return i,j+0.5
+        return i,(j+0.5)%len(map1[1])
     elif f==3:
         new_coord=(j*30,(i+0.5)*30)
         surface.blit(fantome_jaune,new_coord)
-        return i+0.5,j
+        return (i+0.5)%len(map1),j
     else:
         new_coord=((j-0.5)*30,i*30)
         surface.blit(fantome_jaune,new_coord)
-        return i,j-0.5
+        return i,(j-0.5)%len(map1[1])
 
-def last_coord(i,j,f):
-    res=(j*30,i*30)
+def bouger_fantome_peur(i,j,f):
+    
     if f==1:
-        res=(j*30,(i+0.5)*30)
+        new_coord=(j*30,(i-0.5)*30)
+        surface.blit(fantome_peur,new_coord)
+        return (i-0.5)%len(map1),j
     elif f==2:
-         res=((j-0.5)*30,i*30)
+        new_coord=((j+0.5)*30,i*30)
+        surface.blit(fantome_peur,new_coord)
+        return i,(j+0.5)%len(map1[1])
     elif f==3:
-        res=(j*30,(i-0.5)*30)
+        new_coord=(j*30,(i+0.5)*30)
+        surface.blit(fantome_peur,new_coord)
+        return (i+0.5)%len(map1),j
     else:
-        res=((j+0.5)*30,i*30)
+        new_coord=((j-0.5)*30,i*30)
+        surface.blit(fantome_peur,new_coord)
+        return i,(j-0.5)%len(map1[1])
+    
+def last_coord_indice(i,j,f):
+    if f==1 :
+        res = ((i+0.5)%len(map1),j)
+    elif f==2:
+        res = (i,(j-0.5)%len(map1[1]))
+    elif f==3:
+        res = ((i-0.5)%len(map1),j)
+    else:
+        res = (i,(j+0.5)%len(map1[1]))
     return res
 
+def last_coord(i,j,f):
+    if f==1 :
+        res = ((i+0.5)%len(map1)*30,j*30)
+    elif f==2:
+        res = (i*30,(j-0.5)%len(map1[1])*30)
+    elif f==3:
+        res = ((i-0.5)%len(map1)*30,j*30)
+    else:
+        res = (i*30,(j+0.5)%len(map1[1])*30)
+    return res
+
+def last_coord_indice_entiere(i,j,f):
+    if f==1 :
+        res = ((i+1)%len(map1),j)
+    elif f==2:
+        res = (i,(j-1)%len(map1[1]))
+    elif f==3:
+        res = ((i-1)%len(map1),j)
+    else:
+        res = (i,(j+1)%len(map1[1]))
+    return res
     
 
 def aleatoire (n, m):
@@ -321,13 +369,15 @@ def chemin_fantome_rouge_chase (G,Coord):
     return chemin
     
 def chemin_fantome_rose_chase (G,Coord):
-    kfrose=Coord[2][0]
-    kpm=Coord[0][0]
-    (ipm,jpm)=kpm
-    d=Coord[0][1]
+    kfrose = Coord[2][0]
+    (ipm,jpm) = Coord[0][0]
+    d = Coord[0][1]
     k = vg.voisin_plus_loins(G, ipm, jpm, d, 4)
     (i,j)=k
-    cible = vg.voisin_approximatif(G,i,j )
+    cible = vg.voisin_approximatif(G, i,j )
+    (ic,jc) =  cible
+    if cible == kfrose:
+        cible = vg.voisin_approximatif_direction(G, ic, jc, Coord[2][1])
     cible = Dico[cible]
     chemin_frose = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[2][1]),Dico[kfrose],cible)
     chemin=[]
@@ -355,8 +405,12 @@ def chemin_fantome_bleu_chase (G,Coord):
         cible[1] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 3, abs(y))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 3, abs(y))[1])[1]
     elif y < 0 :
         cible[1] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 1, abs(y))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 1, abs(y))[1])[1]
-    cible = (cible[0],cible[1])
-    chemin_fbleu = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[3][1]),kfbleu,Dico[cible])
+    cible = vg.voisin_approximatif(map1,cible[0],cible[1])
+    (ic,jc)=cible
+    if Dico[cible] == kfbleu:
+        cible = vg.voisin_approximatif_direction(G, ic, jc, Coord[3][1])
+    cible = Dico[cible]
+    chemin_fbleu = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[3][1]),kfbleu,cible)
     chemin=[]
     for i in range(len(chemin_fbleu[1])):
         chemin.append(vg.valeur_to_clef(Dico,chemin_fbleu[1][i]))
@@ -436,6 +490,11 @@ def chemin_fantome_bleu_scatter (G,Coord):
             chemin.append(vg.valeur_to_clef(Dico,chemin_fbleu[1][i]))
         return chemin
 
+def chemin_fantome_frigthtened(i,j,d):
+    f = vg.random_except(1, 5, opposite(d))
+    while vg.voisin_coord(map1,i,j,f) not in Dico.keys() :
+        f = vg.random_except(1, 5, opposite(d))
+    return f
 
 def state (n):
     if n < 8 :
@@ -457,13 +516,25 @@ def state (n):
 #0 : scatter
 #1 : chase
 
-def pac_man_catch(Coord):
+def pac_man_catch():
     res = False
+    f=[]
     for k in range(1, 5):
         if Coord[0][0]==Coord[k][0]:
             res = True
-    return res
+            f.append(k)
+    return (res,f)
 
+def redirection(i,j,d):
+    if (i,j)==(9,8):
+        return 2
+    if(i,j)==(9,9):
+        return 1
+    if (i,j)==(9,10):
+        return 4
+    if (i,j)==(8,9):
+        return 1
+    return d
 
 def actions_possibles(i,j):
     res=[]
@@ -515,10 +586,14 @@ def img_jeu(methode):
 
 def game_reset():
     pygame.init()
-    Coord = {0:[(15,9),1], 1:[(7,9),1], 2:[(9,9),1], 3:[(9,8),1],4:[(9,10),1]}
-    tour=0
-    creation_map(map1)
-
+    
+    vg.init_seed()
+    tour = 0
+    points = 0
+    peur = 0
+    peurs = [False,False,False,False]
+    killstreak = 0
+    catch = (False,[0])
     surface.blit(pac_man,(9*30,15*30))
     surface.blit(fantome_rouge,(9*30,7*30))
     surface.blit(fantome_rose,(9*30,9*30))
@@ -526,121 +601,315 @@ def game_reset():
     surface.blit(fantome_jaune,(10*30,9*30))
     pygame.display.flip()
     
-    return Coord, tour
+    Gomme=vg.gomme(map1)
+    Coord = {0:[(15,9),1], 1:[(7,9),1], 2:[(9,9),1], 3:[(9,8),1],4:[(9,10),1]}
+    creation_map(map1)
     
+    return Coord, Gomme, tour, points, peur, peurs, killstreak, catch
+
+clock=pygame.time.Clock()
+
 def take_action(dp,va_jeu):
-    Coord, tour =va_jeu
+    Coord, Gomme, tour, points, peur, peurs, killstreak, catch =va_jeu
     Coord[0][1]=dp
     
     ip,jp=Coord[0][0][0],Coord[0][0][1]
     ip,jp=bouger_pac_man(ip, jp, dp)
     
+    if catch [0]:
+        return points
     
-    if state(tour)==0:
+    tour+=1 
+    if peur == 22:
+        peurs = [False,False,False,False]
+        peur = 0
+        killstreak = 0
+    if peur > 0 :
+        peur +=1
+        
+    if vg.compte_gomme(Gomme) == 40:
+        Gomme[(11,9)]=3
+        surface.blit(cerise,(11,9))
+    if vg.compte_gomme(Gomme) == 100:
+        Gomme[(11,9)]=4
+        surface.blit(fraise,(11,9))
+    
+    if Gomme[Coord[0][0]] == 1:
+        points += 10
+        Gomme[Coord[0][0]]=0
+    if Gomme[Coord[0][0]] == 3:
+        points += 100
+        Gomme[Coord[0][0]]=0
+    if Gomme[Coord[0][0]] == 4:
+        points += 200
+        Gomme[Coord[0][0]]=0
+        
+    if Gomme[Coord[0][0]] == 2:
+        peur = 1
+        peurs = [True,True,True,True]
+        for k in range (1,4):
+            Coord[k][1] = opposite(Coord[k][1])
+        Gomme[Coord[0][0]]=0
+    
+    catch = pac_man_catch()
+    
+    if state(tour)==0 and peurs[0] == False:
         
         chemin_frouge=chemin_fantome_rouge_scatter(map1,Coord)
         drg= Direc[Dico[Coord[1][0]]][Dico[chemin_frouge[1]]]
-        irg,jrg=bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
+        irg,jrg = bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
         Coord[1][0]=chemin_frouge[1]
         if Coord[1][0] == (8,9):
             Coord[1][1]=1
         else :
             Coord[1][1]=drg
+    
+    if state(tour)==0 and peurs[1] == False:
         
         chemin_frose=chemin_fantome_rose_scatter(map1,Coord)
         drs= Direc[Dico[Coord[2][0]]][Dico[chemin_frose[1]]]
-        irs,jrs=bouger_fantome_rose(Coord[2][0][0], Coord[2][0][1], drs)
+        irs,jrs = bouger_fantome_rose(Coord[2][0][0], Coord[2][0][1], drs)
         Coord[2][0]=chemin_frose[1]
-        if Coord[2][0] == (8,9): #fixe d'un bug
+        if Coord[2][0] == (8,9):
             Coord[2][1]=1
         else :
             Coord[2][1]=drs
-        
+    
+    if state(tour)==0 and peurs[2] == False:
         chemin_fbleu=chemin_fantome_bleu_scatter(map1,Coord)
         db= Direc[Dico[Coord[3][0]]][Dico[chemin_fbleu[1]]]
-        ib,jb=bouger_fantome_bleu(Coord[3][0][0], Coord[3][0][1], db)
+        ib,jb = bouger_fantome_bleu(Coord[3][0][0], Coord[3][0][1], db)
         Coord[3][0]=chemin_fbleu[1]
         if Coord[3][0] == (8,9):
             Coord[3][1]=1
         else :
             Coord[3][1]=db
-            
+    
+    if state(tour)==0 and peurs[3] == False:
         chemin_fjaune=chemin_fantome_jaune_scatter(map1,Coord)
         dj= Direc[Dico[Coord[4][0]]][Dico[chemin_fjaune[1]]]
-        ij,jj=bouger_fantome_jaune(Coord[4][0][0], Coord[4][0][1], dj)
+        ij,jj = bouger_fantome_jaune(Coord[4][0][0], Coord[4][0][1], dj)
         Coord[4][0]=chemin_fjaune[1]
         if Coord[4][0] == (8,9):
             Coord[4][1]=1
         else :
             Coord[4][1]=dj
+    
+    if state(tour) == 1 and peurs[0] == False :
         
-    else : #mode chase
         chemin_frouge=chemin_fantome_rouge_chase(map1,Coord)
         drg= Direc[Dico[Coord[1][0]]][Dico[chemin_frouge[1]]]
-        irg,jrg=bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
+        irg, jrg = bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
         Coord[1][0]=chemin_frouge[1]
         if Coord[1][0] == (8,9):
-            Coord[1][1]=1
+            Coord[1][0]=1
         else :
             Coord[1][1]=drg
         
+    if state(tour) == 1 and peurs[1] == False :
         chemin_frose=chemin_fantome_rose_chase(map1,Coord)
         drs= Direc[Dico[Coord[2][0]]][Dico[chemin_frose[1]]]
-        irs,jrs=bouger_fantome_rose(Coord[2][0][0], Coord[2][0][1], drs)
+        irs,jrs = bouger_fantome_rose(Coord[2][0][0], Coord[2][0][1], drs)
         Coord[2][0]=chemin_frose[1]
         if Coord[2][0] == (8,9):
             Coord[2][1]=1
         else :
             Coord[2][1]=drs
         
+    if state(tour) == 1 and peurs[2] == False :
+
         chemin_fbleu=chemin_fantome_bleu_chase(map1,Coord)
         db= Direc[Dico[Coord[3][0]]][Dico[chemin_fbleu[1]]]
-        ib,jb=bouger_fantome_bleu(Coord[3][0][0], Coord[3][0][1], db)
+        ib,jb = bouger_fantome_bleu(Coord[3][0][0], Coord[3][0][1], db)
         Coord[3][0]=chemin_fbleu[1]
         if Coord[3][0] == (8,9):
             Coord[3][1]=1
         else :
             Coord[3][1]=db
-            
+    
+    if state(tour) == 1 and peurs[3] == False :
+        
         chemin_fjaune=chemin_fantome_jaune_chase(map1,Coord)
         dj= Direc[Dico[Coord[4][0]]][Dico[chemin_fjaune[1]]]
-        ij,jj=bouger_fantome_jaune(Coord[4][0][0], Coord[4][0][1], dj)
-        Coord[4][0]=chemin_fjaune[1] 
+        ij,jj = bouger_fantome_jaune(Coord[4][0][0], Coord[4][0][1], dj)
+        Coord[4][0]=chemin_fjaune[1]
         if Coord[4][0] == (8,9):
             Coord[4][1]=1
         else :
             Coord[4][1]=dj
     
+    if peurs[0]:
+        ((i,j),d)=Coord[1]
+        drg = chemin_fantome_frigthtened(i,j,d)
+        drg= redirection(i,j,drg)
+        (irg,jrg)=bouger_fantome_peur(i, j, drg)
+        Coord[1][0]=drg
+    
+    if peurs[1]:
+        ((i,j),d)=Coord[2]
+        drs = chemin_fantome_frigthtened(i,j,d)
+        drs= redirection(i,j,drs)
+        (irs,jrs)=bouger_fantome_peur(i, j, drs)
+        Coord[2][0]=drs
+    
+    if peurs[2]:                
+        ((i,j),d)=Coord[3]
+        db = chemin_fantome_frigthtened(i,j,d)
+        db= redirection(i,j,db)
+        (ib,jb)=bouger_fantome_peur(i, j, db)
+        Coord[1][0]=db
+         
+    if peurs[3]:
+        ((i,j),d)=Coord[4]
+        dj = chemin_fantome_frigthtened(i,j,d)
+        dj= redirection(i,j,dj)
+        (ij,jj)=bouger_fantome_peur(i, j, dj)
+        Coord[4][0]=drg
+                        
+    if not catch[0] :
+        catch = pac_man_catch()
+    
+    if (catch[0] and peur==0) :
+        print(points)
+        
+    if (catch[0] and peur > 0):
+        if catch[1]!=[]:
+            for k in catch[1]:
+                k-=1
+                if peurs[k]:
+                    catch=(False,k)
+                    peurs[k]=False
+                    killstreak +=1
+                    if killstreak == 1:
+                        points += 200
+                    elif killstreak == 2:
+                        points += 400
+                    elif killstreak == 3:
+                        points += 800
+                    elif killstreak == 4:
+                        points += 1600
+                                                
+                    if k == 0:
+                        Coord[1]=[(7,9),1]
+                    if k == 1:
+                        Coord[2]=[(9,9),1]
+                    if k == 2:
+                        Coord[3]=[(9,8),2]
+                    if k == 3:
+                        Coord[4]=[(9,10),3]
+                else :
+                    print(points)
+        
     pygame.display.flip()
-
     fst_img=img_jeu(2)
     
     #pour avoir une séquence de deux images et donc que la direction des protagonistes soit visible
+    
     ip,jp=bouger_pac_man(ip,jp,dp)
     Coord[0][0]=(int(ip),int(jp))
-    irg,jrg=bouger_fantome_rouge(irg,jrg,drg)
+    if peurs[0]==0:
+        irg,jrg=bouger_fantome_rouge(irg,jrg,drg)
+    else :
+        irg,jrg=bouger_fantome_peur(irg,jrg,drg)
     Coord[1][0]=(int(irg),int(jrg))
-    irs,jrs=bouger_fantome_rose(irs,jrs,drs)
+    if peurs[1]==0:
+        irs,jrs=bouger_fantome_rose(irs,jrs,drs)
+    else:
+        irs,jrs=bouger_fantome_peur(irs,jrs,drs)
     Coord[2][0]=(int(irs),int(jrs))
-    ib,jb=bouger_fantome_bleu(ib,jb,db)
+    if peurs[2]==0:
+        ib,jb=bouger_fantome_bleu(ib,jb,db)
+    else :
+        ib,jb=bouger_fantome_peur(ib,jb,db)
     Coord[3][0]=(int(ib),int(jb))
-    ij,jj=bouger_fantome_jaune(ij,jj,dj)
+    if peurs[3]==0:
+        ij,jj=bouger_fantome_jaune(ij,jj,dj)
+    else:
+        ij,jj=bouger_fantome_peur(ij,jj,dj)
     Coord[4][0]=(int(ij),int(jj))
+    
+    print(Coord)
+    
+    
+    
+    (i,j)=Coord[1][0]
+    (pi,pj)=last_coord_indice_entiere(i, j, drg)
+    coord = (pj*30,pi*30)
+    if Gomme[(pi,pj)] == 1:
+        surface.blit(pac_gomme,coord)
+    if Gomme[(pi,pj)] == 2:
+        surface.blit(super_pac_gomme,coord)
+    if Gomme[(pi,pj)] == 0: 
+        surface.blit(brique_noire,coord)
+    if Gomme[(pi,pj)] == 3: 
+        surface.blit(cerise,coord)
+    if Gomme[(pi,pj)] == 4: 
+        surface.blit(fraise,coord)
+    
+    (i,j)=Coord[2][0]
+    (pi,pj)=last_coord_indice_entiere(i, j, drs)
+    coord = (pj*30,pi*30)
+    if Gomme[(pi,pj)] == 1:
+        surface.blit(pac_gomme,coord)
+    if Gomme[(pi,pj)] == 2:
+        surface.blit(super_pac_gomme,coord)
+    if Gomme[(pi,pj)] == 0: 
+        surface.blit(brique_noire,coord)
+    if Gomme[(pi,pj)] == 3: 
+        surface.blit(cerise,coord)
+    if Gomme[(pi,pj)] == 4: 
+        surface.blit(fraise,coord)
+    
+    (i,j)=Coord[3][0]
+    (pi,pj)=last_coord_indice_entiere(i, j, db)
+    coord = (pj*30,pi*30)
+    if Gomme[(pi,pj)] == 1:
+        surface.blit(pac_gomme,coord)
+    if Gomme[(pi,pj)] == 2:
+        surface.blit(super_pac_gomme,coord)
+    if Gomme[(pi,pj)] == 0: 
+        surface.blit(brique_noire,coord)
+    if Gomme[(pi,pj)] == 3: 
+        surface.blit(cerise,coord)
+    if Gomme[(pi,pj)] == 4: 
+        surface.blit(fraise,coord)
+    
+    (i,j)=Coord[4][0]
+    (pi,pj)=last_coord_indice_entiere(i, j, dj)
+    coord = (pj*30,pi*30)
+    if Gomme[(pi,pj)] == 1:
+        surface.blit(pac_gomme,coord)
+    if Gomme[(pi,pj)] == 2:
+        surface.blit(super_pac_gomme,coord)
+    if Gomme[(pi,pj)] == 0: 
+        surface.blit(brique_noire,coord)
+    if Gomme[(pi,pj)] == 3: 
+        surface.blit(cerise,coord)
+    if Gomme[(pi,pj)] == 4: 
+        surface.blit(fraise,coord)
                         
     pygame.display.flip()
     
+    clock.tick(1)
+
+    
     sequence_img=(fst_img,img_jeu(2))
     
-    return sequence_img, Coord, tour
- 
-"""sequence type   
-va_jeu=game_reset()
-Coord,tour=va_jeu
-img=[]
-for k in range(10):
-    dp=random.choice(actions_possibles(Coord[0][0][0],Coord[0][0][1]))
-    sequence_img, Coord, tour=take_action(dp,va_jeu)
-    img.append(sequence_img)
-    print(Coord)
-"""
+    va_jeu = sequence_img, Coord, Gomme, tour, points, peur, peurs, killstreak, catch   
+    return va_jeu
+
+#sequence type   
+for p in range(1000):
+    va_jeu=game_reset()
+    Coord, Gomme, tour, points, peur, peurs, killstreak, catch=va_jeu
+    img=[]
+    for k in range(1000):
+        dp=random.choice(actions_possibles(Coord[0][0][0],Coord[0][0][1]))
+        va_jeu = take_action(dp,va_jeu)
+        if type(va_jeu)==int:
+            break
+        else :
+            sequence_img,Coord, Gomme, tour, points, peur, peurs, killstreak, catch = va_jeu
+            va_jeu = Coord, Gomme, tour, points, peur, peurs, killstreak, catch
+            img.append(sequence_img)
 
