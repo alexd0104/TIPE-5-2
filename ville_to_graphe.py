@@ -9,7 +9,8 @@ import random
 inf=float('inf')
 def init_seed():
     seed = random.randint(0, 2**32 - 1)
-    #seed = 2020253812
+    seed = 1851123448
+    #seed = 545876252
     random.seed(seed)
     print(seed)
 
@@ -55,6 +56,31 @@ def dico(G):
                 D[(i,j)] = p
                 p+=1
     return D
+
+SPG = [(4,1),(4,17),(15,1),(15,17)]
+WPG = [(7,6),(8,6),(9,6),(10,6),(11,6),(11,7),(11,8),(11,9),(11,10),(11,11),(11,12),(10,12),(9,12),(8,12),(7,12),(7,11),(7,10),(7,9),(7,8),(7,7),(6,8),(6,10),(9,9),(9,8),(9,10),(8,9),(12,6),(12,12),(9,0),(9,1),(9,2),(9,3),(9,5),(9,13),(9,15),(9,16),(9,17),(9,18)]
+
+def gomme(G):
+    D={}
+    sommets = dico(G)
+    for s in sommets :
+        D[s] = 1
+        if s in SPG:
+            D[s]=2
+        if s in WPG:
+            D[s]=0
+        if s == (11,9):
+            D[s]=3
+    return D
+        
+def compte_gomme(gomme):
+    c=0
+    for k in gomme.values():
+        if k == 1:
+            c+=1
+    return c
+        
+    
 
 def valeur_to_clef(dico, valeur):
     #on suppose que la valeur a une clef qui est unique
@@ -110,7 +136,7 @@ def voisin_approximatif(G,i,j):
             (nvi,nvj)=voisin_coord(G,i,j,d)
             if G[nvi][nvj]=='9':
                 return (nvi,nvj)
-        for d in range(5,8):
+        for d in range(5,9):
             (nvi,nvj)=voisin_coord_diagonal(G,i,j,d)
             if G[nvi][nvj]=='9':
                 return (nvi,nvj)
@@ -118,8 +144,26 @@ def voisin_approximatif(G,i,j):
             (nvi,nvj)=voisin_plus_loins(G,i,j,d,2)
             if G[nvi][nvj]=='9':
                 return (nvi,nvj)
-        print("wwshhhhh")
-        print(i,j)
+
+
+def voisin_approximatif_direction(G,i,j,d0):
+    for d in range(d0,d0+4):
+        if d<5:
+            (nvi,nvj)=voisin_coord(G,i,j,d)
+            if G[nvi][nvj]=='9':
+                return (nvi,nvj)
+        else :
+            (nvi,nvj)=voisin_coord(G,i,j,d-4)
+            if G[nvi][nvj]=='9':
+                return (nvi,nvj)
+    for d in range(5,9):
+        (nvi,nvj)=voisin_coord_diagonal(G,i,j,d)
+        if G[nvi][nvj]=='9':
+            return (nvi,nvj)
+    for d in range(1,5):
+        (nvi,nvj)=voisin_plus_loins(G,i,j,d,2)
+        if G[nvi][nvj]=='9':
+            return (nvi,nvj)
         
 def adjacence_direction (G):
     #renvoie la matrice d'adjacence avec la direction à emprunter pour aller du sommet i au sommet j
@@ -153,8 +197,3 @@ def random_except(a,b,k):
     while n==k:
         n = random.randint(a,b)
     return n
-    
-
-
-
-
