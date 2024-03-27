@@ -15,6 +15,7 @@ from PIL import Image, ImageSequence
 import matplotlib.pyplot as plt
 from IPython.display import display # pour afficher dans le notebook
 import numpy as np
+import pyperclip
 
 pygame.init()
 inf=float('inf')
@@ -321,6 +322,19 @@ def last_coord_indice(i,j,f):
         res = (i,(j+0.5)%len(map1[1]))
     return res
 
+def next_coord_indice(i,j,f):
+    if f==1:
+        res = ((i-0.5)%len(map1),j)
+    elif f==2:
+        res = (i,(j+0.5)%len(map1[1]))
+    elif f==3:
+        res = ((i+0.5)%len(map1),j)
+    else :
+        res = (i,(j-0.5)%len(map1[1]))
+    return res
+    
+    
+    
 def last_coord(i,j,f):
     if f==1 :
         res = ((i+0.5)%len(map1)*30,j*30)
@@ -516,14 +530,14 @@ def state (n):
 #0 : scatter
 #1 : chase
 
-def pac_man_catch():
+def pac_man_catch(Coord):
     res = False
     f=[]
     for k in range(1, 5):
         if Coord[0][0]==Coord[k][0]:
             res = True
             f.append(k)
-    return (res,f)
+    return [res,f]
 
 def redirection(i,j,d):
     if (i,j)==(9,8):
@@ -535,6 +549,8 @@ def redirection(i,j,d):
     if (i,j)==(8,9):
         return 1
     return d
+
+spawn = [(8,9),(9,9),(9,8),(9,10)]
 
 def actions_possibles(i,j):
     res=[]
@@ -575,11 +591,80 @@ def img_jeu(methode):
 #atest1=img_jeu(1)
 #atest2=img_jeu(2)
 
+def replace(i,j,d,peurs):
+    (pi,pj)=last_coord_indice_entiere(i, j, d)
+    coord = (pj*30,pi*30)
+    if Gomme[(pi,pj)] == 1:
+        surface.blit(pac_gomme,coord)
+    if Gomme[(pi,pj)] == 2:
+        surface.blit(super_pac_gomme,coord)
+    if Gomme[(pi,pj)] == 0: 
+        surface.blit(brique_noire,coord)
+    if Gomme[(pi,pj)] == 3: 
+        surface.blit(cerise,coord)
+    if Gomme[(pi,pj)] == 4: 
+        surface.blit(fraise,coord)
+    if (pi,pj)==Coord[0][0]:
+        surface.blit(pac_man,coord)
+    if (pi,pj)==Coord[1][0]:
+        if peurs[0]:
+            surface.blit(fantome_peur,coord)
+        else :
+            surface.blit(fantome_rouge,coord)
+    if (pi,pj)==Coord[2][0]:
+        if peurs[1]:
+            surface.blit(fantome_peur,coord)
+        else :
+            surface.blit(fantome_rose,coord)
+    if (pi,pj)==Coord[3][0]:
+        if peurs[2]:
+            surface.blit(fantome_peur,coord)
+        else :
+            surface.blit(fantome_bleu,coord)
+    if (pi,pj)==Coord[4][0]:
+        if peurs[3]:
+            surface.blit(fantome_peur,coord)
+        else :
+            surface.blit(fantome_jaune,coord)
 
-                    
+def replace_coord(i,j,peurs):
+    coord = (j*30,i*30)
+    if Gomme[(i,j)] == 1:
+        surface.blit(pac_gomme,coord)
+    if Gomme[(i,j)] == 2:
+        surface.blit(super_pac_gomme,coord)
+    if Gomme[(i,j)] == 0: 
+        surface.blit(brique_noire,coord)
+    if Gomme[(i,j)] == 3: 
+        surface.blit(cerise,coord)
+    if Gomme[(i,j)] == 4: 
+        surface.blit(fraise,coord)
+    if (i,j)==Coord[0][0]:
+        surface.blit(pac_man,coord)
+    if (i,j)==Coord[1][0]:
+        if peurs[0]:
+            surface.blit(fantome_peur,coord)
+        else :
+            surface.blit(fantome_rouge,coord)
+    if (i,j)==Coord[2][0]:
+        if peurs[1]:
+            surface.blit(fantome_peur,coord)
+        else :
+            surface.blit(fantome_rose,coord)
+    if (i,j)==Coord[3][0]:
+        if peurs[2]:
+            surface.blit(fantome_peur,coord)
+        else :
+            surface.blit(fantome_bleu,coord)
+    if (i,j)==Coord[4][0]:
+        if peurs[3]:
+            surface.blit(fantome_peur,coord)
+        else :
+            surface.blit(fantome_jaune,coord)
 
-
-
+def replace_global(peurs):
+    for (i,j) in Dico.keys():    
+        replace_coord(i,j,peurs)
 
 """fonctions qui modifient directement la fenêtre pygame"""
 
@@ -591,9 +676,11 @@ def game_reset():
     tour = 0
     points = 0
     peur = 0
+    peur = 1
     peurs = [False,False,False,False]
+    peurs = [True,True,True, True]
     killstreak = 0
-    catch = (False,[0])
+    catch = [False,[0]]
     surface.blit(pac_man,(9*30,15*30))
     surface.blit(fantome_rouge,(9*30,7*30))
     surface.blit(fantome_rose,(9*30,9*30))
@@ -612,15 +699,56 @@ clock=pygame.time.Clock()
 def take_action(dp,va_jeu):
     Coord, Gomme, tour, points, peur, peurs, killstreak, catch =va_jeu
     Coord[0][1]=dp
-    
+        
     ip,jp=Coord[0][0][0],Coord[0][0][1]
     ip,jp=bouger_pac_man(ip, jp, dp)
     
-    if catch [0]:
+    coordonnées = []
+    for k in range(5):
+        coordonnées.append(Coord[k][0])
+    
+    catch = pac_man_catch(Coord)
+    
+    if (catch[0] and peur==0) :
+        replace_global
+        print(points)
         return points
     
+        
+    if (catch[0] and peur > 0):
+        if catch[1]!=[]:
+            for k in catch[1]:
+                k-=1
+                if peurs[k]:
+                    catch[0]=False
+                    peurs[k]=False
+                    killstreak +=1
+                    if killstreak == 1:
+                        points += 200
+                    elif killstreak == 2:
+                        points += 400
+                    elif killstreak == 3:
+                        points += 800
+                    elif killstreak == 4:
+                        points += 1600
+                    
+                    replace_global(peurs)
+                                                
+                    if k == 0:
+                        Coord[1]=[(7,9),1]
+                    if k == 1:
+                        Coord[2]=[(9,9),1]
+                    if k == 2:
+                        Coord[3]=[(9,8),2]
+                    if k == 3:
+                        Coord[4]=[(9,10),4]
+                    
+                else :
+                    return points
+    catch[1]=[]
+    
     tour+=1 
-    if peur == 22:
+    if peur == 2200:
         peurs = [False,False,False,False]
         peur = 0
         killstreak = 0
@@ -651,10 +779,8 @@ def take_action(dp,va_jeu):
             Coord[k][1] = opposite(Coord[k][1])
         Gomme[Coord[0][0]]=0
     
-    catch = pac_man_catch()
     
-    if state(tour)==0 and peurs[0] == False:
-        
+    if (state(tour)==0 and peurs[0] == False and (1 not in catch[1])) or (peurs[0]==False and Coord[1][0] in spawn) :        
         chemin_frouge=chemin_fantome_rouge_scatter(map1,Coord)
         drg= Direc[Dico[Coord[1][0]]][Dico[chemin_frouge[1]]]
         irg,jrg = bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
@@ -664,7 +790,7 @@ def take_action(dp,va_jeu):
         else :
             Coord[1][1]=drg
     
-    if state(tour)==0 and peurs[1] == False:
+    if state(tour)==0 and peurs[1] == False and (2 not in catch[1]) or (peurs[1]==False and Coord[2][0] in spawn):
         
         chemin_frose=chemin_fantome_rose_scatter(map1,Coord)
         drs= Direc[Dico[Coord[2][0]]][Dico[chemin_frose[1]]]
@@ -675,7 +801,7 @@ def take_action(dp,va_jeu):
         else :
             Coord[2][1]=drs
     
-    if state(tour)==0 and peurs[2] == False:
+    if state(tour)==0 and peurs[2] == False and (3 not in catch[1]) or (peurs[2]==False and Coord[3][0] in spawn):
         chemin_fbleu=chemin_fantome_bleu_scatter(map1,Coord)
         db= Direc[Dico[Coord[3][0]]][Dico[chemin_fbleu[1]]]
         ib,jb = bouger_fantome_bleu(Coord[3][0][0], Coord[3][0][1], db)
@@ -685,7 +811,7 @@ def take_action(dp,va_jeu):
         else :
             Coord[3][1]=db
     
-    if state(tour)==0 and peurs[3] == False:
+    if state(tour)==0 and peurs[3] == False and (4 not in catch[1]) or (peurs[3]==False and Coord[4][0] in spawn):
         chemin_fjaune=chemin_fantome_jaune_scatter(map1,Coord)
         dj= Direc[Dico[Coord[4][0]]][Dico[chemin_fjaune[1]]]
         ij,jj = bouger_fantome_jaune(Coord[4][0][0], Coord[4][0][1], dj)
@@ -695,18 +821,18 @@ def take_action(dp,va_jeu):
         else :
             Coord[4][1]=dj
     
-    if state(tour) == 1 and peurs[0] == False :
+    if state(tour) == 1 and peurs[0] == False and (1 not in catch[1]) and not (Coord[1][0] in spawn):
         
         chemin_frouge=chemin_fantome_rouge_chase(map1,Coord)
         drg= Direc[Dico[Coord[1][0]]][Dico[chemin_frouge[1]]]
         irg, jrg = bouger_fantome_rouge(Coord[1][0][0], Coord[1][0][1], drg)
         Coord[1][0]=chemin_frouge[1]
         if Coord[1][0] == (8,9):
-            Coord[1][0]=1
+            Coord[1][1]=1
         else :
             Coord[1][1]=drg
         
-    if state(tour) == 1 and peurs[1] == False :
+    if state(tour) == 1 and peurs[1] == False and (2 not in catch[1]) and not (Coord[2][0] in spawn):
         chemin_frose=chemin_fantome_rose_chase(map1,Coord)
         drs= Direc[Dico[Coord[2][0]]][Dico[chemin_frose[1]]]
         irs,jrs = bouger_fantome_rose(Coord[2][0][0], Coord[2][0][1], drs)
@@ -715,8 +841,8 @@ def take_action(dp,va_jeu):
             Coord[2][1]=1
         else :
             Coord[2][1]=drs
-        
-    if state(tour) == 1 and peurs[2] == False :
+            
+    if state(tour) == 1 and peurs[2] == False and (3 not in catch[1]) and not (Coord[3][0] in spawn):
 
         chemin_fbleu=chemin_fantome_bleu_chase(map1,Coord)
         db= Direc[Dico[Coord[3][0]]][Dico[chemin_fbleu[1]]]
@@ -727,7 +853,7 @@ def take_action(dp,va_jeu):
         else :
             Coord[3][1]=db
     
-    if state(tour) == 1 and peurs[3] == False :
+    if state(tour) == 1 and peurs[3] == False and (4 not in catch[1]) and not (Coord[4][0] in spawn):
         
         chemin_fjaune=chemin_fantome_jaune_chase(map1,Coord)
         dj= Direc[Dico[Coord[4][0]]][Dico[chemin_fjaune[1]]]
@@ -743,41 +869,53 @@ def take_action(dp,va_jeu):
         drg = chemin_fantome_frigthtened(i,j,d)
         drg= redirection(i,j,drg)
         (irg,jrg)=bouger_fantome_peur(i, j, drg)
-        Coord[1][0]=drg
+        (inrg,jnrg)=next_coord_indice(irg,jrg,drg)
+        Coord[1][0]=(int(inrg),int(jnrg))
+        Coord[1][1]=drg
     
     if peurs[1]:
         ((i,j),d)=Coord[2]
         drs = chemin_fantome_frigthtened(i,j,d)
         drs= redirection(i,j,drs)
         (irs,jrs)=bouger_fantome_peur(i, j, drs)
-        Coord[2][0]=drs
+        (inrs,jnrs)=next_coord_indice(irs,jrs,drs)
+        Coord[2][0]=(int(inrs),int(jnrs))
+        Coord[2][1]=drs
     
     if peurs[2]:                
         ((i,j),d)=Coord[3]
         db = chemin_fantome_frigthtened(i,j,d)
         db= redirection(i,j,db)
         (ib,jb)=bouger_fantome_peur(i, j, db)
-        Coord[1][0]=db
+        (inb,jnb)=next_coord_indice(ib,jb,db)
+        Coord[3][0]=(int(inb),int(jnb))
+        Coord[3][1]=db
          
     if peurs[3]:
         ((i,j),d)=Coord[4]
         dj = chemin_fantome_frigthtened(i,j,d)
         dj= redirection(i,j,dj)
         (ij,jj)=bouger_fantome_peur(i, j, dj)
-        Coord[4][0]=drg
-                        
-    if not catch[0] :
-        catch = pac_man_catch()
+        (inj,jnj)=next_coord_indice(ij,jj,dj)
+        Coord[4][0]=(int(inj),int(jnj))
+        Coord[4][1]=dj
+    
+    replace_global
+                            
+    catch=pac_man_catch(Coord)
     
     if (catch[0] and peur==0) :
+        replace_global
         print(points)
+        return points
+    
         
     if (catch[0] and peur > 0):
         if catch[1]!=[]:
             for k in catch[1]:
                 k-=1
                 if peurs[k]:
-                    catch=(False,k)
+                    catch[0]=False
                     peurs[k]=False
                     killstreak +=1
                     if killstreak == 1:
@@ -788,6 +926,8 @@ def take_action(dp,va_jeu):
                         points += 800
                     elif killstreak == 4:
                         points += 1600
+                    
+                    replace_global(peurs)
                                                 
                     if k == 0:
                         Coord[1]=[(7,9),1]
@@ -796,9 +936,9 @@ def take_action(dp,va_jeu):
                     if k == 2:
                         Coord[3]=[(9,8),2]
                     if k == 3:
-                        Coord[4]=[(9,10),3]
+                        Coord[4]=[(9,10),4]
                 else :
-                    print(points)
+                    return points
         
     pygame.display.flip()
     fst_img=img_jeu(2)
@@ -807,95 +947,33 @@ def take_action(dp,va_jeu):
     
     ip,jp=bouger_pac_man(ip,jp,dp)
     Coord[0][0]=(int(ip),int(jp))
-    if peurs[0]==0:
+    if peurs[0]==0 and (1 not in catch[1]):
         irg,jrg=bouger_fantome_rouge(irg,jrg,drg)
-    else :
+    elif (1 not in catch[1]) :
         irg,jrg=bouger_fantome_peur(irg,jrg,drg)
-    Coord[1][0]=(int(irg),int(jrg))
-    if peurs[1]==0:
+    if peurs[1]==0 and (2 not in catch[1]):
         irs,jrs=bouger_fantome_rose(irs,jrs,drs)
-    else:
+    elif (2 not in catch[1]) :
         irs,jrs=bouger_fantome_peur(irs,jrs,drs)
-    Coord[2][0]=(int(irs),int(jrs))
-    if peurs[2]==0:
+    if peurs[2]==0 and (3 not in catch[1]):
         ib,jb=bouger_fantome_bleu(ib,jb,db)
-    else :
+    elif (3 not in catch[1]) :
         ib,jb=bouger_fantome_peur(ib,jb,db)
-    Coord[3][0]=(int(ib),int(jb))
-    if peurs[3]==0:
+    if peurs[3]==0 and (4 not in catch[1]):
         ij,jj=bouger_fantome_jaune(ij,jj,dj)
-    else:
+    elif (4 not in catch[1]) :
         ij,jj=bouger_fantome_peur(ij,jj,dj)
-    Coord[4][0]=(int(ij),int(jj))
     
-    print(Coord)
-    
-    
-    
-    (i,j)=Coord[1][0]
-    (pi,pj)=last_coord_indice_entiere(i, j, drg)
-    coord = (pj*30,pi*30)
-    if Gomme[(pi,pj)] == 1:
-        surface.blit(pac_gomme,coord)
-    if Gomme[(pi,pj)] == 2:
-        surface.blit(super_pac_gomme,coord)
-    if Gomme[(pi,pj)] == 0: 
-        surface.blit(brique_noire,coord)
-    if Gomme[(pi,pj)] == 3: 
-        surface.blit(cerise,coord)
-    if Gomme[(pi,pj)] == 4: 
-        surface.blit(fraise,coord)
-    
-    (i,j)=Coord[2][0]
-    (pi,pj)=last_coord_indice_entiere(i, j, drs)
-    coord = (pj*30,pi*30)
-    if Gomme[(pi,pj)] == 1:
-        surface.blit(pac_gomme,coord)
-    if Gomme[(pi,pj)] == 2:
-        surface.blit(super_pac_gomme,coord)
-    if Gomme[(pi,pj)] == 0: 
-        surface.blit(brique_noire,coord)
-    if Gomme[(pi,pj)] == 3: 
-        surface.blit(cerise,coord)
-    if Gomme[(pi,pj)] == 4: 
-        surface.blit(fraise,coord)
-    
-    (i,j)=Coord[3][0]
-    (pi,pj)=last_coord_indice_entiere(i, j, db)
-    coord = (pj*30,pi*30)
-    if Gomme[(pi,pj)] == 1:
-        surface.blit(pac_gomme,coord)
-    if Gomme[(pi,pj)] == 2:
-        surface.blit(super_pac_gomme,coord)
-    if Gomme[(pi,pj)] == 0: 
-        surface.blit(brique_noire,coord)
-    if Gomme[(pi,pj)] == 3: 
-        surface.blit(cerise,coord)
-    if Gomme[(pi,pj)] == 4: 
-        surface.blit(fraise,coord)
-    
-    (i,j)=Coord[4][0]
-    (pi,pj)=last_coord_indice_entiere(i, j, dj)
-    coord = (pj*30,pi*30)
-    if Gomme[(pi,pj)] == 1:
-        surface.blit(pac_gomme,coord)
-    if Gomme[(pi,pj)] == 2:
-        surface.blit(super_pac_gomme,coord)
-    if Gomme[(pi,pj)] == 0: 
-        surface.blit(brique_noire,coord)
-    if Gomme[(pi,pj)] == 3: 
-        surface.blit(cerise,coord)
-    if Gomme[(pi,pj)] == 4: 
-        surface.blit(fraise,coord)
-                        
+    replace_global(peurs)
+                            
     pygame.display.flip()
     
-    clock.tick(1)
-
+    clock.tick()
     
+
     sequence_img=(fst_img,img_jeu(2))
     
-    va_jeu = sequence_img, Coord, Gomme, tour, points, peur, peurs, killstreak, catch   
+    va_jeu = sequence_img, Coord, Gomme, tour, points, peur, peurs, killstreak, catch
     return va_jeu
 
 #sequence type   
@@ -913,3 +991,11 @@ for p in range(1000):
             va_jeu = Coord, Gomme, tour, points, peur, peurs, killstreak, catch
             img.append(sequence_img)
 
+tab = [[[]for j in range(189)]for i in range(189)]
+for i in range(189):
+    for j in range(189):
+        tab[i][j]=fg.plus_court_chemin(Dist, i, j)
+        print(i,j)
+
+chaine_nombres = '[' + ','.join(map(str, tab)) + ']'
+pyperclip.copy(chaine_nombres)
