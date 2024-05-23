@@ -669,7 +669,7 @@ def img_jeu(methode):
 #atest1=img_jeu(1)
 #atest2=img_jeu(2)
 
-def replace(i,j,d,peurs):
+def replace(i,j,d,peurs,Gomme):
     (pi,pj)=last_coord_indice_entiere(i, j, d)
     coord = (pj*30,pi*30)
     if Gomme[(pi,pj)] == 1:
@@ -705,7 +705,7 @@ def replace(i,j,d,peurs):
         else :
             surface.blit(fantome_jaune,coord)
 
-def replace_coord(i,j,peurs,Coord):
+def replace_coord(i,j,peurs,Coord,Gomme):
     coord = (j*30,i*30)
     if Gomme[(i,j)] == 1:
         surface.blit(pac_gomme,coord)
@@ -740,9 +740,9 @@ def replace_coord(i,j,peurs,Coord):
         else :
             surface.blit(fantome_jaune,coord)
 
-def replace_global(peurs,Coord):
+def replace_global(peurs,Coord,Gomme):
     for (i,j) in Dico.keys():    
-        replace_coord(i,j,peurs,Coord)
+        replace_coord(i,j,peurs,Coord,Gomme)
 
 """fonctions qui modifient directement la fenêtre pygame"""
 
@@ -822,8 +822,7 @@ def take_action(dp,va_jeu):
     catch = pac_man_catch(Coord)
     
     if (catch[0] and peur==0) :
-        replace_global(peurs,Coord)
-        #return(points)
+        replace_global(peurs,Coord,Gomme)
         return respawn(img_jeu(2),Gomme,tour,peur,peurs,vie)
     
         
@@ -844,7 +843,7 @@ def take_action(dp,va_jeu):
                     elif killstreak == 4:
                         points += 1600
                     
-                    replace_global(peurs,Coord)
+                    replace_global(peurs,Coord,Gomme)
                                                 
                     if k == 0:
                         Coord[1]=[(7,9),1]
@@ -879,9 +878,11 @@ def take_action(dp,va_jeu):
         Gomme[Coord[0][0]]=0
     if Gomme[Coord[0][0]] == 3:
         points += 100
+        print("cerise")
         Gomme[Coord[0][0]]=0
     if Gomme[Coord[0][0]] == 4:
         points += 200
+        print("fraise")
         Gomme[Coord[0][0]]=0
         
     if Gomme[Coord[0][0]] == 2:
@@ -1012,13 +1013,12 @@ def take_action(dp,va_jeu):
         Coord[4][0]=(int(inj),int(jnj))
         Coord[4][1]=dj
     
-    replace_global(peurs,Coord)
+    replace_global(peurs,Coord,Gomme)
                             
     catch=pac_man_catch(Coord)
     
     if (catch[0] and peur==0) :
-        replace_global(peurs,Coord)
-        #return points
+        replace_global(peurs,Coord,Gomme)
         return respawn(img_jeu(2),Gomme,tour,peur,peurs, vie)
         
     
@@ -1040,7 +1040,7 @@ def take_action(dp,va_jeu):
                     elif killstreak == 4:
                         points += 1600
                     
-                    replace_global(peurs,Coord)
+                    replace_global(peurs,Coord,Gomme)
                                                 
                     if k == 0:
                         Coord[1]=[(7,9),1]
@@ -1077,7 +1077,7 @@ def take_action(dp,va_jeu):
     elif (4 not in catch[1]) :
         ij,jj=bouger_fantome_peur(ij,jj,dj)
     
-    replace_global(peurs,Coord)
+    replace_global(peurs,Coord,Gomme)
                             
     pygame.display.flip()
     
@@ -1092,15 +1092,16 @@ def take_action(dp,va_jeu):
 
 
 Coord={0:[(15,9),1], 1:[(7,9),1], 2:[(9,9),1], 3:[(9,8),1],4:[(9,10),1]}
-Gomme=vg.gomme(map1)
+#Gomme=vg.gomme(map1)
 
 #sequence type
-
+"""
 va_jeu=game_reset()
 for k in range(5000):
     sequence_img,Coord, Gomme, tour, points, peur, peurs, killstreak, catch, vie=va_jeu
     dp=random.choice([1,2,3,4])
     va_jeu=take_action(dp,va_jeu)
+"""
 """
 img_data = pygame.image.tostring(surface, 'RGB')    
 img = Image.frombytes('RGB', (570,650), img_data)
