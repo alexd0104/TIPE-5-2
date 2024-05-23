@@ -14,34 +14,13 @@ Created on Wed Mar 27 10:46:26 2024
 
 bareme=1
 
-map1="""1hhhhhhhhthhhhhhhh2
-v99999999v99999999v
-v9<>9<h>9u9<h>9<>9v
-v99999999999999999v
-v9<>9n9<hth>9n9<>9v
-v9999v999v999v9999v
-3hh29xh>9u9<hy91hh4
-888v9v9999999v9v888
-hhh49u91>9<29u93hhh
-9999999v999v9999999
-hhh29n93hhh49n91hhh
-888v9v9999999v9v888
-1hh49u9<hth>9u93hh2
-v99999999v99999999v
-v9<29<h>9u9<h>91>9v
-v99v99999999999v99v
-x>9u9n9<hth>9n9u9<y
-v9999v999v999v9999v
-v9<hhjh>9u9<hjhh>9v
-v99999999999999999v
-3hhhhhhhhhhhhhhhhh4"""
 
 import tensorflow as tf
 from tensorflow.keras import models, layers
 import numpy as np
 import time
-import matplotlib.pyplot as plot
-import fonction_adaptee3 as fa
+import matplotlib.pyplot as plt
+import Pac_man_final as fa
 import recompenses as rw
 import ville_to_graphe as vg
 
@@ -52,11 +31,12 @@ file_model='modele_1.keras'
 file_stats='graphe_score_1'
 
 gamma=tf.constant(0.999)
-epoch=1500
+epoch=2
 #decalage_debut=90
 taille_sequence=2
-nbr_jeu=40
+nbr_jeu=10
 best_score=0
+
 
 epsilon=1.
 epsilon_min=0.10
@@ -103,13 +83,14 @@ def simulation(epsilon, debug=False):
   observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, new_vie =fa.game_reset()
   img1,img2=red_scale(observation[0]),red_scale(observation[1])
   tab_sequence=[img1,img2]
-  tab_sequence=np.array(tab_sequence, dtype=np.float32)
   ######
 
   score=0
   while True:
+    tab_sequence=np.array(tab_sequence, dtype=np.float32)
+    #print(score)
     if np.random.random()>epsilon:
-      sequence_entree= tab_sequence.transpose(0,4,1,2,3)
+      sequence_entree= tab_sequence.transpose(3,1,2,0)
       valeurs_q=model(sequence_entree)
       action=int(tf.argmax(valeurs_q[0]))
     else:
@@ -117,7 +98,6 @@ def simulation(epsilon, debug=False):
 
     h=np.random.randint(1) #on garde que 10% des données pour les décoréler
     if h==0:
-      tab_sequence=np.array(tab_sequence)
       tab_observations.append(np.concatenate(tab_sequence, axis=-1))
       tab_actions.append(action)
     score+=points
@@ -199,6 +179,9 @@ def train_step(reward, action, observation, next_observation, done):
   optimizer.apply_gradients(zip(gradients, model.trainable_variables))
   train_loss(loss)
   
+  
+
+  
 def train(debug=False):
   global epsilon, best_score
   for e in range(epoch):
@@ -216,10 +199,10 @@ def train(debug=False):
     epsilon-=epsilon_decay_value
     epsilon=max(epsilon, epsilon_min)
     np.save(file_stats, tab_s)
-    if np.mean(tab_s[-200:])>best_score: #(on regarde les 200 derniers scores -> optimisable ?
+    if np.mean(tab_s[-20:])>best_score: #(on regarde les 200 derniers scores -> optimisable ?
       print("Sauvegarde du modele")
       model.save(file_model)
-      best_score=np.mean(tab_s[-200:])
+      best_score=np.mean(tab_s[-20:])
 
 model=model(16)
 
@@ -227,6 +210,10 @@ optimizer=tf.keras.optimizers.Adam(learning_rate=1E-4)
 train_loss=tf.keras.metrics.Mean()
 tab_s=[]
 train(debug=True)
+
+
+plt.plot([i for i in range(len(tab_s))], tab_s)
+plt.show()
   
 """
 observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, new_vie =fa.game_reset()
