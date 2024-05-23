@@ -482,7 +482,7 @@ def chemin_fantome_rouge_scatter (G,Coord):
     kfrouge=Dico[Coord[1][0]]
     if kfrouge != 15 :
         if Coord[1][0] not in spawn :
-            chemin_frouge = dijkstra_sans_direction[kfrouge][0][opposite(Coord[1][1])-1]
+            chemin_frouge = dijkstra_sans_direction[kfrouge][15][opposite(Coord[1][1])-1]
         else :
             chemin_frouge = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[1][1]),kfrouge,15)
         chemin=[]
@@ -500,7 +500,7 @@ def chemin_fantome_jaune_scatter (G,Coord):
     kfjaune=Dico[Coord[4][0]]
     if kfjaune != 172 :
         if Coord[4][0] not in spawn :
-            chemin_fjaune  = dijkstra_sans_direction[kfjaune][0][opposite(Coord[4][1])-1]
+            chemin_fjaune  = dijkstra_sans_direction[kfjaune][172][opposite(Coord[4][1])-1]
         else :
             chemin_fjaune = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[4][1]),kfjaune,172)
         chemin=[]
@@ -518,7 +518,7 @@ def chemin_fantome_bleu_scatter (G,Coord):
     kfbleu=Dico[Coord[3][0]]
     if kfbleu != 188 :
         if Coord[3][0] not in spawn:
-            chemin_fbleu = dijkstra_sans_direction[kfbleu][0][opposite(Coord[3][1])-1]
+            chemin_fbleu = dijkstra_sans_direction[kfbleu][188][opposite(Coord[3][1])-1]
         else :
             chemin_fbleu = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[3][1]),kfbleu,188)
         chemin=[]
@@ -1095,13 +1095,13 @@ Coord={0:[(15,9),1], 1:[(7,9),1], 2:[(9,9),1], 3:[(9,8),1],4:[(9,10),1]}
 #Gomme=vg.gomme(map1)
 
 #sequence type
-"""
+
 va_jeu=game_reset()
 for k in range(5000):
     sequence_img,Coord, Gomme, tour, points, peur, peurs, killstreak, catch, vie=va_jeu
     dp=random.choice([1,2,3,4])
     va_jeu=take_action(dp,va_jeu)
-"""
+
 """
 img_data = pygame.image.tostring(surface, 'RGB')    
 img = Image.frombytes('RGB', (570,650), img_data)
