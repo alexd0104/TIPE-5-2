@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 from IPython.display import display # pour afficher dans le notebook
 import numpy as np
 import ast
+import pyperclip
 
 dijkstra = open('Dijkstra.txt','r')
 dijkstra = dijkstra.read()
@@ -392,83 +393,71 @@ def chemin_pacman (G,k,Coord) :
 
 def chemin_fantome_rouge_chase (G,Coord):
     kfrouge=Dico[Coord[1][0]]
-    if Coord[1][0] not in spawn : 
-        chemin_frouge = dijkstra_sans_direction[kfrouge][Dico[Coord[0][0]]][opposite(Coord[1][1])-1]
-    else : 
-        return chemin_fantome_rouge_scatter(G, Coord)
+    chemin_frouge = dijkstra_sans_direction[kfrouge][Dico[Coord[0][0]]][opposite(Coord[1][1])-1]
     chemin=[]
     for i in range(len(chemin_frouge[1])):
         chemin.append(vg.valeur_to_clef(Dico,chemin_frouge[1][i]))
     return chemin
     
 def chemin_fantome_rose_chase (G,Coord):
-    if Coord[2][0] not in spawn :
-        kfrose = Coord[2][0]
-        (ipm,jpm) = Coord[0][0]
-        d = Coord[0][1]
-        k = vg.voisin_plus_loins(G, ipm, jpm, d, 4)
-        (i,j)=k
-        cible = vg.voisin_approximatif(G, i,j )
-        (ic,jc) =  cible
-        if cible == kfrose:
-            cible = vg.voisin_approximatif_direction(G, ic, jc, Coord[2][1])
-        cible = Dico[cible]
-        chemin_frose = dijkstra_sans_direction[Dico[kfrose]][cible][opposite(Coord[2][1])-1]
-    else :
-        return chemin_fantome_rose_scatter(G, Coord)
+    kfrose = Coord[2][0]
+    (ipm,jpm) = Coord[0][0]
+    d = Coord[0][1]
+    k = vg.voisin_plus_loins(G, ipm, jpm, d, 4)
+    (i,j)=k
+    cible = vg.voisin_approximatif(G, i,j )
+    (ic,jc) =  cible
+    if cible == kfrose:
+        cible = vg.voisin_approximatif_direction(G, ic, jc, Coord[2][1])
+    cible = Dico[cible]
+    chemin_frose = dijkstra_sans_direction[Dico[kfrose]][cible][opposite(Coord[2][1])-1]
     chemin=[]
     for i in range(len(chemin_frose[1])):
         chemin.append(vg.valeur_to_clef(Dico,chemin_frose[1][i]))
     return chemin
     
 def chemin_fantome_bleu_chase (G,Coord):
-    if Coord[1][0] not in spawn : 
-        (ir,jr)=Coord[1][0]
-        kfbleu=Dico[Coord[3][0]]
-        kpm=Coord[0][0]
-        d=Coord[0][1]
-        k= vg.voisin_plus_loins(G, kpm[0],kpm[1], d, 2)
-        (i,j)=k
-        cible = vg.voisin_approximatif(G, i,j )
-        [ik,jk]=cible
-        cible = [ik,jk]
-        x = jr - jk
-        if x > 0 :
-            cible[0] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 4, abs(x))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 4, abs(x))[1])[0]
-        elif x < 0 :
-            cible[0] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 2, abs(x))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 2, abs(x))[1])[0]
-        y = ir - ik
-        if y > 0 :
-            cible[1] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 3, abs(y))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 3, abs(y))[1])[1]
-        elif y < 0 :
-            cible[1] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 1, abs(y))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 1, abs(y))[1])[1]
-        cible = vg.voisin_approximatif(map1,cible[0],cible[1])
-        (ic,jc)=cible
-        if Dico[cible] == kfbleu:
-            cible = vg.voisin_approximatif_direction(G, ic, jc, Coord[3][1])
-        cible = Dico[cible]
-        chemin_fbleu = dijkstra_sans_direction[kfbleu][cible][opposite(Coord[3][1])-1]
-    else :
-        return chemin_fantome_bleu_scatter(G, Coord)
+    (ir,jr)=Coord[1][0]
+    kfbleu=Dico[Coord[3][0]]
+    kpm=Coord[0][0]
+    d=Coord[0][1]
+    k= vg.voisin_plus_loins(G, kpm[0],kpm[1], d, 2)
+    (i,j)=k
+    cible = vg.voisin_approximatif(G, i,j )
+    [ik,jk]=cible
+    cible = [ik,jk]
+    x = jr - jk
+    if x > 0 :
+        cible[0] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 4, abs(x))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 4, abs(x))[1])[0]
+    elif x < 0 :
+        cible[0] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 2, abs(x))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 2, abs(x))[1])[0]
+    y = ir - ik
+    if y > 0 :
+        cible[1] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 3, abs(y))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 3, abs(y))[1])[1]
+    elif y < 0 :
+        cible[1] = vg.voisin_approximatif(G,vg.voisin_plus_loins(G, cible[0],cible[1], 1, abs(y))[0],vg.voisin_plus_loins(G, cible[0],cible[1], 1, abs(y))[1])[1]
+    cible = vg.voisin_approximatif(map1,cible[0],cible[1])
+    (ic,jc)=cible
+    if Dico[cible] == kfbleu:
+        cible = vg.voisin_approximatif_direction(G, ic, jc, Coord[3][1])
+    cible = Dico[cible]
+    chemin_fbleu = dijkstra_sans_direction[kfbleu][cible][opposite(Coord[3][1])-1]
     chemin=[]
     for i in range(len(chemin_fbleu[1])):
         chemin.append(vg.valeur_to_clef(Dico,chemin_fbleu[1][i]))
     return chemin
 
 def chemin_fantome_jaune_chase (G,Coord):
-    if Coord[4][0] not in spawn : 
-        kfjaune=Dico[Coord[4][0]]
-        (ij,jj) = vg.valeur_to_clef(Dico, kfjaune)
-        kpm=Dico[Coord[0][0]]
-        (ik,jk) = vg.valeur_to_clef(Dico, kpm)
-        if vg.dist_euclidienne (ij,ij,ik,jk) > 8 :
-            chemin_fjaune = dijkstra_sans_direction[kfjaune][Dico[Coord[0][0]]][opposite(Coord[4][1])-1]
-            chemin=[]
-            for i in range(len(chemin_fjaune[1])):
-                chemin.append(vg.valeur_to_clef(Dico,chemin_fjaune[1][i]))
-            return chemin
-        else : 
-            return chemin_fantome_jaune_scatter (G,Coord)
+    kfjaune=Dico[Coord[4][0]]
+    (ij,jj) = vg.valeur_to_clef(Dico, kfjaune)
+    kpm=Dico[Coord[0][0]]
+    (ik,jk) = vg.valeur_to_clef(Dico, kpm)
+    if vg.dist_euclidienne (ij,ij,ik,jk) > 8 :
+        chemin_fjaune = dijkstra_sans_direction[kfjaune][Dico[Coord[0][0]]][opposite(Coord[4][1])-1]
+        chemin=[]
+        for i in range(len(chemin_fjaune[1])):
+            chemin.append(vg.valeur_to_clef(Dico,chemin_fjaune[1][i]))
+        return chemin
     else : 
         return chemin_fantome_jaune_scatter (G,Coord)
 
@@ -494,7 +483,7 @@ def chemin_fantome_rouge_scatter (G,Coord):
     kfrouge=Dico[Coord[1][0]]
     if kfrouge != 15 :
         if Coord[1][0] not in spawn :
-            chemin_frouge = dijkstra_sans_direction[kfrouge][15][opposite(Coord[1][1])-1]
+            chemin_frouge = dijkstra_sans_direction[kfrouge][0][opposite(Coord[1][1])-1]
         else :
             chemin_frouge = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[1][1]),kfrouge,15)
         chemin=[]
@@ -512,7 +501,7 @@ def chemin_fantome_jaune_scatter (G,Coord):
     kfjaune=Dico[Coord[4][0]]
     if kfjaune != 172 :
         if Coord[4][0] not in spawn :
-            chemin_fjaune  = dijkstra_sans_direction[kfjaune][172][opposite(Coord[4][1])-1]
+            chemin_fjaune  = dijkstra_sans_direction[kfjaune][0][opposite(Coord[4][1])-1]
         else :
             chemin_fjaune = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[4][1]),kfjaune,172)
         chemin=[]
@@ -530,7 +519,7 @@ def chemin_fantome_bleu_scatter (G,Coord):
     kfbleu=Dico[Coord[3][0]]
     if kfbleu != 188 :
         if Coord[3][0] not in spawn:
-            chemin_fbleu = dijkstra_sans_direction[kfbleu][188][opposite(Coord[3][1])-1]
+            chemin_fbleu = dijkstra_sans_direction[kfbleu][0][opposite(Coord[3][1])-1]
         else :
             chemin_fbleu = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[3][1]),kfbleu,188)
         chemin=[]
@@ -1106,15 +1095,18 @@ def take_action(dp,va_jeu):
 Coord={0:[(15,9),1], 1:[(7,9),1], 2:[(9,9),1], 3:[(9,8),1],4:[(9,10),1]}
 #Gomme=vg.gomme(map1)
 
+
+
+
 #sequence type
-"""
+
 va_jeu=game_reset()
 for k in range(5000):
     sequence_img,Coord, Gomme, tour, points, peur, peurs, killstreak, catch, vie=va_jeu
     dp=random.choice([1,2,3,4])
     va_jeu=take_action(dp,va_jeu)
 
-
+"""
 img_data = pygame.image.tostring(surface, 'RGB')    
 img = Image.frombytes('RGB', (570,650), img_data)
 img1=np.array(img)
