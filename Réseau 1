@@ -1,16 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed May 22 16:44:54 2024
 
-@author: alexf
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Mar 27 10:46:26 2024
-
-@author: alexf
-"""
 
 bareme=1
 
@@ -24,17 +12,19 @@ import Pac_man_final as fa
 import recompenses as rw
 import ville_to_graphe as vg
 
-
 tab_s=[]
+tab_loss=[]
 nbr_action=tf.constant(4) 
 file_model='modele_1.keras'
-file_stats='graphe_score_1'
+file_score='tab_s.npy'
+file_loss='tab_loss.npy'
+
 
 gamma=tf.constant(0.999)
-epoch=2
+epoch=80
 #decalage_debut=90
 taille_sequence=2
-nbr_jeu=10
+nbr_jeu=40
 best_score=0
 
 
@@ -45,7 +35,7 @@ end_epsilon=epoch//4
 epsilon_decay_value=epsilon/(end_epsilon-start_epsilon)
 
 def model(nbr_cc=8):
-  entree=layers.Input(shape=( 650, 570, taille_sequence,), dtype='float32')
+  entree=layers.Input(shape=( 650, 570, taille_sequence), dtype='float32')
   #pour 1 convolution : le noyau de convolution est de taille 3X3 et se déplace de 2 en 2.
   result=layers.Conv2D(  nbr_cc, 3, activation='relu', padding='same', strides=2)((entree/128)-1) #on normalise les pixels dans [-1,1]
   result=layers.Conv2D(2*nbr_cc, 3, activation='relu', padding='same', strides=2)(result)
@@ -194,27 +184,51 @@ def train(debug=False):
       if debug:
         print("  Entrainement {:5.3f} seconde(s)".format(float(time.time()-start_time)))
         print("     loss: {:6.4f}".format(train_loss.result()))
+      tab_loss.append( train_loss.result().numpy() )
+      np.save(file_loss,tab_loss)
       train_loss.reset_state()
 
     epsilon-=epsilon_decay_value
     epsilon=max(epsilon, epsilon_min)
-    np.save(file_stats, tab_s)
-    if np.mean(tab_s[-20:])>best_score: #(on regarde les 200 derniers scores -> optimisable ?
+    np.save(file_score, tab_s)
+    if np.mean(tab_s[-200:])>best_score: #(on regarde les 200 derniers scores -> optimisable ?
       print("Sauvegarde du modele")
       model.save(file_model)
-      best_score=np.mean(tab_s[-20:])
+      best_score=np.mean(tab_s[-200:])
 
-model=model(16)
-
+model=model(16) #si 1er training
 optimizer=tf.keras.optimizers.Adam(learning_rate=1E-4)
 train_loss=tf.keras.metrics.Mean()
-tab_s=[]
-train(debug=True)
+
+#Pour réentrainer :
+#model=tf.keras.models.load_model(file_model)
+#tab_s=np.load(file_score).tolist()
+#tab_loss=np.load(file_score).tolist()
+
+train(debug=True)  
+
+#prudence:
+np.save(file_score,tab_s)
+np.save(file_loss,tab_loss)
+
+        
 
 
-plt.plot([i for i in range(len(tab_s))], tab_s)
+
+
+plt.figure()
+plt.plot([game for game in range(len(tab_s))], tab_s)
+plt.title('tab_score1')
+plt.savefig('tab_score1.png') 
+plt.close()  
 plt.show()
-  
+
+plt.figure()
+plt.plot([epoch for epoch in range(len(tab_loss))], tab_loss)
+plt.title('tab_loss1')
+plt.savefig('tab_loss1.png')
+plt.show()
+
 """
 observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, new_vie =fa.game_reset()
 #for i in range(decalage_debut-taille_sequence):
