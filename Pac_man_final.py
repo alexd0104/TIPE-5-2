@@ -464,10 +464,7 @@ def chemin_fantome_jaune_chase (G,Coord):
 def chemin_fantome_rose_scatter (G,Coord):
     kfrose=Dico[Coord[2][0]]
     if kfrose != 0 :
-        if Coord[2][0] not in spawn :
-            chemin_frose = dijkstra_sans_direction[kfrose][0][opposite(Coord[2][1])-1]
-        else :
-            chemin_frose = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[2][1]),kfrose,0)
+        chemin_frose = dijkstra_sans_direction[kfrose][0][opposite(Coord[2][1])-1]
         chemin=[]
         for i in range(len(chemin_frose[1])):
             chemin.append(vg.valeur_to_clef(Dico,chemin_frose[1][i]))
@@ -482,10 +479,7 @@ def chemin_fantome_rose_scatter (G,Coord):
 def chemin_fantome_rouge_scatter (G,Coord):
     kfrouge=Dico[Coord[1][0]]
     if kfrouge != 15 :
-        if Coord[1][0] not in spawn :
-            chemin_frouge = dijkstra_sans_direction[kfrouge][0][opposite(Coord[1][1])-1]
-        else :
-            chemin_frouge = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[1][1]),kfrouge,15)
+        chemin_frouge = dijkstra_sans_direction[kfrouge][15][opposite(Coord[1][1])-1]
         chemin=[]
         for i in range(len(chemin_frouge[1])):
             chemin.append(vg.valeur_to_clef(Dico,chemin_frouge[1][i]))
@@ -500,10 +494,7 @@ def chemin_fantome_rouge_scatter (G,Coord):
 def chemin_fantome_jaune_scatter (G,Coord):
     kfjaune=Dico[Coord[4][0]]
     if kfjaune != 172 :
-        if Coord[4][0] not in spawn :
-            chemin_fjaune  = dijkstra_sans_direction[kfjaune][0][opposite(Coord[4][1])-1]
-        else :
-            chemin_fjaune = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[4][1]),kfjaune,172)
+        chemin_fjaune  = dijkstra_sans_direction[kfjaune][172][opposite(Coord[4][1])-1]
         chemin=[]
         for i in range(len(chemin_fjaune[1])):
             chemin.append(vg.valeur_to_clef(Dico,chemin_fjaune[1][i]))
@@ -518,10 +509,7 @@ def chemin_fantome_jaune_scatter (G,Coord):
 def chemin_fantome_bleu_scatter (G,Coord):
     kfbleu=Dico[Coord[3][0]]
     if kfbleu != 188 :
-        if Coord[3][0] not in spawn:
-            chemin_fbleu = dijkstra_sans_direction[kfbleu][0][opposite(Coord[3][1])-1]
-        else :
-            chemin_fbleu = fg.plus_court_chemin_sans_direction(map1,opposite(Coord[3][1]),kfbleu,188)
+        chemin_fbleu = dijkstra_sans_direction[kfbleu][188][opposite(Coord[3][1])-1]
         chemin=[]
         for i in range(len(chemin_fbleu[1])):
             chemin.append(vg.valeur_to_clef(Dico,chemin_fbleu[1][i]))
