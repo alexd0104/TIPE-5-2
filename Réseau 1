@@ -21,20 +21,24 @@ file_loss='tab_loss.npy'
 
 
 gamma=tf.constant(0.999)
-epoch=80
+epoch=1 #1500
 #decalage_debut=90
 taille_sequence=2
-nbr_jeu=40
+nbr_jeu=2 #40
 best_score=0
 
 
 epsilon=1.
 epsilon_min=0.10
 start_epsilon=1
-end_epsilon=epoch//4
+end_epsilon=500
 epsilon_decay_value=epsilon/(end_epsilon-start_epsilon)
 
-def model(nbr_cc=8):
+
+
+
+
+def model(nbr_cc=16):
   entree=layers.Input(shape=( 650, 570, taille_sequence), dtype='float32')
   #pour 1 convolution : le noyau de convolution est de taille 3X3 et se déplace de 2 en 2.
   result=layers.Conv2D(  nbr_cc, 3, activation='relu', padding='same', strides=2)((entree/128)-1) #on normalise les pixels dans [-1,1]
@@ -52,11 +56,15 @@ def model(nbr_cc=8):
   model=models.Model(inputs=entree, outputs=sortie)
   return model
 
-def red_scale(image):
+
+def green_scale(image): 
    image=np.array(image)
-   red=image[:,:,0]
-   res=np.expand_dims(red,axis=-1)
+   green=image[:,:,1]
+   res=np.expand_dims(green,axis=-1)
+   #n,m=res.shape
+   res[res==155]=170 #on augmente un peu le fantome bleu pour bien le différencier avec le rose
    return res
+
 
 def simulation(epsilon, debug=False):
   if debug:
@@ -71,14 +79,13 @@ def simulation(epsilon, debug=False):
   vie=3
   tour=0
   observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, new_vie =fa.game_reset()
-  img1,img2=red_scale(observation[0]),red_scale(observation[1])
+  img1,img2=green_scale(observation[0]),green_scale(observation[1])
   tab_sequence=[img1,img2]
   ######
 
   score=0
   while True:
     tab_sequence=np.array(tab_sequence, dtype=np.float32)
-    #print(score)
     if np.random.random()>epsilon:
       sequence_entree= tab_sequence.transpose(3,1,2,0)
       valeurs_q=model(sequence_entree)
@@ -110,7 +117,7 @@ def simulation(epsilon, debug=False):
     reward = points + malus
     if h==0:
       if reward==0:
-          reward=-1
+          reward=-3
       tab_rewards.append(reward)
     
     if done:
@@ -135,8 +142,10 @@ def simulation(epsilon, debug=False):
              
     va_jeu= observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, vie
     observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, vie = fa.take_action(action+1, va_jeu)
-    img1,img2=red_scale(observation[0]), red_scale(observation[1]) 
+    img1,img2=green_scale(observation[0]), green_scale(observation[1]) 
     tab_sequence=[img1,img2]
+     	
+    
     if h==0:
       tab_next_observations.append(np.concatenate(tab_sequence, axis=-1))
 
@@ -211,7 +220,6 @@ train(debug=True)
 np.save(file_score,tab_s)
 np.save(file_loss,tab_loss)
 
-        
 
 
 
