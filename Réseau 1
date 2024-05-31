@@ -16,15 +16,17 @@ tab_s=[]
 tab_loss=[]
 nbr_action=tf.constant(4) 
 file_model='modele_1.keras'
-file_score='tab_s.npy'
-file_loss='tab_loss.npy'
+file_score='tab_s1.npy'
+file_loss='tab_loss1.npy'
+file_best_score='best_score1.npy'
+file_epsilon='epsilon1.npy'
+file_optimizer='optimizer_state.npy'
 
-
-gamma=tf.constant(0.999)
-epoch=1 #1500
+gamma=tf.constant(0.95)
+epoch=8 #1500
 #decalage_debut=90
 taille_sequence=2
-nbr_jeu=2 #40
+nbr_jeu=40 #40
 best_score=0
 
 
@@ -36,6 +38,7 @@ epsilon_decay_value=epsilon/(end_epsilon-start_epsilon)
 
 
 
+                            ################ Debug ###########
 
 
 def model(nbr_cc=16):
@@ -64,17 +67,20 @@ def green_scale(image):
    #n,m=res.shape
    res[res==155]=170 #on augmente un peu le fantome bleu pour bien le différencier avec le rose
    return res
-
+               
+   return res
 
 def simulation(epsilon, debug=False):
   if debug:
     start_time=time.time()
 
+  #initialisation de la future dataset
   tab_observations=[]
   tab_rewards=[]
   tab_actions=[]
   tab_next_observations=[]
   tab_done=[]
+  
   done=False
   vie=3
   tour=0
@@ -82,9 +88,10 @@ def simulation(epsilon, debug=False):
   img1,img2=green_scale(observation[0]),green_scale(observation[1])
   tab_sequence=[img1,img2]
   ######
-
+  
   score=0
   while True:
+
     tab_sequence=np.array(tab_sequence, dtype=np.float32)
     if np.random.random()>epsilon:
       sequence_entree= tab_sequence.transpose(3,1,2,0)
@@ -143,9 +150,8 @@ def simulation(epsilon, debug=False):
     va_jeu= observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, vie
     observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, vie = fa.take_action(action+1, va_jeu)
     img1,img2=green_scale(observation[0]), green_scale(observation[1]) 
-    tab_sequence=[img1,img2]
-     	
     
+    tab_sequence=[img1,img2]
     if h==0:
       tab_next_observations.append(np.concatenate(tab_sequence, axis=-1))
 
@@ -168,11 +174,13 @@ def train_step(reward, action, observation, next_observation, done):
   next_mask=tf.one_hot(best_next_actions, nbr_action)
   next_best_Q_values=tf.reduce_sum(next_Q_values*next_mask, axis=1)
   target_Q_values=reward+(1-done)*gamma*next_best_Q_values
+  #valeurs max prédites pour la prochaine observation après avoir appliqué l'action optimale d'après la politique
   target_Q_values=tf.reshape(target_Q_values, (-1, 1))
   mask=tf.one_hot(action, nbr_action)
   with tf.GradientTape() as tape:
     all_Q_values=model(observation)
     Q_values=tf.reduce_sum(all_Q_values*mask, axis=1, keepdims=True)
+    #on a gardé que Q(s,a) où a est l'acton qui a été prise ?
     loss=my_loss(target_Q_values, Q_values)
   gradients=tape.gradient(loss, model.trainable_variables)
   optimizer.apply_gradients(zip(gradients, model.trainable_variables))
@@ -200,23 +208,42 @@ def train(debug=False):
     epsilon-=epsilon_decay_value
     epsilon=max(epsilon, epsilon_min)
     np.save(file_score, tab_s)
-    if np.mean(tab_s[-200:])>best_score: #(on regarde les 200 derniers scores -> optimisable ?
+    
+    if np.mean(tab_s[-200:])>best_score: #on regarde les 200 derniers scores -> optimisable ?
       print("Sauvegarde du modele")
       model.save(file_model)
+      optimizer_weights = optimizer.variables
+      with open(file_optimizer, 'wb') as f:
+          np.save(f, optimizer_weights)
       best_score=np.mean(tab_s[-200:])
+      np.save(file_best_score, best_score)
+  
+    np.save(file_epsilon, epsilon)
 
-model=model(16) #si 1er training
-optimizer=tf.keras.optimizers.Adam(learning_rate=1E-4)
+
+
 train_loss=tf.keras.metrics.Mean()
+optimizer=tf.keras.optimizers.Adam(learning_rate=1E-4)
 
-#Pour réentrainer :
-#model=tf.keras.models.load_model(file_model)
-#tab_s=np.load(file_score).tolist()
-#tab_loss=np.load(file_score).tolist()
+#si 1er training
+model=model(16) 
+
+
+#Pour poursuivre l'entrainement:
+"""
+model=tf.keras.models.load_model(file_model)
+with open(file_optimizer, 'rb') as f: #b car fichier en binaire 
+    optimizer_weights = np.load(f, allow_pickle=True) #allow_pickle pour convertir 
+optimizer.set_weights(optimizer_weights)
+tab_s=np.load(file_score).tolist()
+tab_loss=np.load(file_score).tolist()
+best_score=np.load(file_best_score)
+epsilon=np.load(file_epsilon)
+"""
 
 train(debug=True)  
 
-#prudence:
+
 np.save(file_score,tab_s)
 np.save(file_loss,tab_loss)
 
@@ -243,7 +270,7 @@ observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, new_vie
 #  print('là')
 #  take_action('0',va_jeu)
 tab_sequence=[]
-img1,img2=red_scale(observation[0]),red_scale(observation[1])
+img1,img2=green_scale(observation[0]),green_scale(observation[1])
 tab_sequence.append([img1,img2])
 tab_sequence.append([img1,img2])
 tab_sequence=np.array(tab_sequence, dtype=np.float32)
