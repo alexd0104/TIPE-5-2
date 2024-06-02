@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun  1 13:08:31 2024
+
+@author: alexf
+"""
+
 
 
 bareme=1
@@ -14,27 +21,30 @@ import ville_to_graphe as vg
 
 tab_s=[]
 tab_loss=[]
+tab_accuracy=[]
 nbr_action=tf.constant(4) 
 file_model='modele_1.keras'
 file_score='tab_s1.npy'
 file_loss='tab_loss1.npy'
+file_accuracy='tab_accuracy1.npy'
 file_best_score='best_score1.npy'
 file_epsilon='epsilon1.npy'
-file_optimizer='optimizer_state.npy'
 
-gamma=tf.constant(0.95)
-epoch=8 #1500
+
+gamma=tf.constant(0.97)
+epoch=2 #1500
 #decalage_debut=90
 taille_sequence=2
-nbr_jeu=40 #40
+nbr_jeu= 10
 best_score=0
 
 
 epsilon=1.
 epsilon_min=0.10
 start_epsilon=1
-end_epsilon=500
-epsilon_decay_value=epsilon/(end_epsilon-start_epsilon)
+#end_epsilon=130
+epsilon_decay_value=0.998
+#epsilon/(end_epsilon-start_epsilon)
 
 
 
@@ -64,11 +74,9 @@ def green_scale(image):
    image=np.array(image)
    green=image[:,:,1]
    res=np.expand_dims(green,axis=-1)
-   #n,m=res.shape
    res[res==155]=170 #on augmente un peu le fantome bleu pour bien le différencier avec le rose
    return res
-               
-   return res
+
 
 def simulation(epsilon, debug=False):
   if debug:
@@ -123,8 +131,7 @@ def simulation(epsilon, debug=False):
     
     reward = points + malus
     if h==0:
-      if reward==0:
-          reward=-3
+      reward=rw.adjust_reward(bareme, reward)
       tab_rewards.append(reward)
     
     if done:
@@ -162,10 +169,11 @@ def simulation(epsilon, debug=False):
   
   
   
-  
+"""
 def my_loss(y, q):
   loss=tf.reduce_mean(tf.math.square(y-q))
   return loss
+"""
 
 @tf.function
 def train_step(reward, action, observation, next_observation, done):
@@ -181,9 +189,10 @@ def train_step(reward, action, observation, next_observation, done):
     all_Q_values=model(observation)
     Q_values=tf.reduce_sum(all_Q_values*mask, axis=1, keepdims=True)
     #on a gardé que Q(s,a) où a est l'acton qui a été prise ?
-    loss=my_loss(target_Q_values, Q_values)
+    loss=model.loss(target_Q_values, Q_values)
+    model.metrics[0].update_state(target_Q_values, Q_values)
   gradients=tape.gradient(loss, model.trainable_variables)
-  optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+  model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
   train_loss(loss)
   
   
@@ -204,17 +213,17 @@ def train(debug=False):
       tab_loss.append( train_loss.result().numpy() )
       np.save(file_loss,tab_loss)
       train_loss.reset_state()
+      tab_accuracy.append(model.metrics[0].result().numpy())
+      model.metrics[0].reset_state()
+      np.save(file_accuracy,tab_accuracy)
 
     epsilon-=epsilon_decay_value
     epsilon=max(epsilon, epsilon_min)
     np.save(file_score, tab_s)
-    
+
     if np.mean(tab_s[-200:])>best_score: #on regarde les 200 derniers scores -> optimisable ?
       print("Sauvegarde du modele")
-      model.save(file_model)
-      optimizer_weights = optimizer.variables
-      with open(file_optimizer, 'wb') as f:
-          np.save(f, optimizer_weights)
+      model.save(file_model,model)
       best_score=np.mean(tab_s[-200:])
       np.save(file_best_score, best_score)
   
@@ -222,30 +231,39 @@ def train(debug=False):
 
 
 
-train_loss=tf.keras.metrics.Mean()
-optimizer=tf.keras.optimizers.Adam(learning_rate=1E-4)
+train_loss = tf.keras.metrics.Mean(name='train_loss')
 
-#si 1er training
+###########  Pour 1er training :  ################
+
 model=model(16) 
+adam=tf.keras.optimizers.Adam(learning_rate=0.0001)
+my_loss= tf.keras.losses.MeanSquaredError()
+accuracy_metric= tf.keras.metrics.MeanAbsolutePercentageError()
+
+model.compile(optimizer=adam,
+              loss=my_loss, #erreur quadratique,
+              metrics=[accuracy_metric]) #moyenne de |y-q|
+         
 
 
-#Pour poursuivre l'entrainement:
+#############################################
+
+
+
+#########  Pour poursuivre l'entrainement :  #############
 """
 model=tf.keras.models.load_model(file_model)
-with open(file_optimizer, 'rb') as f: #b car fichier en binaire 
-    optimizer_weights = np.load(f, allow_pickle=True) #allow_pickle pour convertir 
-optimizer.set_weights(optimizer_weights)
+
 tab_s=np.load(file_score).tolist()
-tab_loss=np.load(file_score).tolist()
+tab_loss=np.load(file_loss).tolist()
+tab_accuracy=np.load(file_accuracy)
 best_score=np.load(file_best_score)
 epsilon=np.load(file_epsilon)
 """
+#############################################
+
 
 train(debug=True)  
-
-
-np.save(file_score,tab_s)
-np.save(file_loss,tab_loss)
 
 
 
@@ -255,27 +273,20 @@ plt.figure()
 plt.plot([game for game in range(len(tab_s))], tab_s)
 plt.title('tab_score1')
 plt.savefig('tab_score1.png') 
-plt.close()  
 plt.show()
+plt.close()  
+
 
 plt.figure()
-plt.plot([epoch for epoch in range(len(tab_loss))], tab_loss)
+plt.plot([game for game in range(len(tab_loss))], tab_loss)
 plt.title('tab_loss1')
 plt.savefig('tab_loss1.png')
 plt.show()
 
-"""
-observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, new_vie =fa.game_reset()
-#for i in range(decalage_debut-taille_sequence):
-#  print('là')
-#  take_action('0',va_jeu)
-tab_sequence=[]
-img1,img2=green_scale(observation[0]),green_scale(observation[1])
-tab_sequence.append([img1,img2])
-tab_sequence.append([img1,img2])
-tab_sequence=np.array(tab_sequence, dtype=np.float32)
-new_array = tab_sequence.transpose(0,4,1,2,3)
-valeurs_q=model(new_array[0])
-action=int(tf.argmax(valeurs_q[0]))
+plt.figure()
+plt.plot([game for game in range(len(tab_accuracy))], tab_accuracy)
+plt.title('tab_accuracy1')
+plt.savefig('tab_accuracy1.png')
+plt.show()
 
-"""
+
