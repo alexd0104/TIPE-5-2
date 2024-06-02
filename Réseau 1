@@ -35,7 +35,7 @@ gamma=tf.constant(0.97)
 epoch=2 #1500
 #decalage_debut=90
 taille_sequence=2
-nbr_jeu= 10
+nbr_jeu= 40
 best_score=0
 
 
