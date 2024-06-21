@@ -22,35 +22,45 @@ import ville_to_graphe as vg
 tab_s=[]
 tab_loss=[]
 tab_accuracy=[]
+tab_win=[] #par epoch
 nbr_action=tf.constant(4) 
+
 file_model='modele_1.keras'
 file_score='tab_s1.npy'
 file_loss='tab_loss1.npy'
 file_accuracy='tab_accuracy1.npy'
 file_best_score='best_score1.npy'
-file_epsilon='epsilon1.npy'
+file_win='tab_win.npy'
+file_epsilon='epsilon.npy'
 
+file_model2='modele_2.keras'
+file_score2='tab_s2.npy'
+file_loss2='tab_loss2.npy'
+file_accuracy2='tab_accuracy2.npy'
+file_epsilon2='epsilon2.npy'
+file_best_score2='best_score2.npy'
+file_win2='tab_win2.npy'
 
 gamma=tf.constant(0.97)
-epoch=2 #1500
+epoch=10 #1500
 #decalage_debut=90
 taille_sequence=2
 nbr_jeu= 40
 best_score=0
 
 
-epsilon=1.
+epsilon=0.5
 epsilon_min=0.10
 start_epsilon=1
 #end_epsilon=130
-epsilon_decay_value=0.998
+epsilon_decay_value=0.997
 #epsilon/(end_epsilon-start_epsilon)
 
 
 
                             ################ Debug ###########
 
-
+"""
 def model(nbr_cc=16):
   entree=layers.Input(shape=( 650, 570, taille_sequence), dtype='float32')
   #pour 1 convolution : le noyau de convolution est de taille 3X3 et se déplace de 2 en 2.
@@ -68,7 +78,7 @@ def model(nbr_cc=16):
     
   model=models.Model(inputs=entree, outputs=sortie)
   return model
-
+"""
 
 def green_scale(image): 
    image=np.array(image)
@@ -113,20 +123,25 @@ def simulation(epsilon, debug=False):
       tab_observations.append(np.concatenate(tab_sequence, axis=-1))
       tab_actions.append(action)
     score+=points
+    malus=0
     
     if fa.win(Gomme):
+        print('win')
+        tab_win[-1]+=1
         done=True
+        if h==0:
+            tab_done.append(True)
         
-    malus=0
-    if new_vie<vie:
+        
+    elif new_vie<vie:
       malus= rw.reward_vie(bareme,new_vie)
       vie=new_vie
+      if vie==0:
+          done=True
       if h==0:
-          tab_done.append(True) #done est toujours faux mais dans le calcul de Bellman on aura True (donc 1)
+          tab_done.append(True) #done peu rester faux mais dans le calcul de Bellman on aura True (donc 1)
     elif h==0:
         tab_done.append(done)
-    if vie==0:
-        done=True
     
     
     reward = points + malus
@@ -155,7 +170,7 @@ def simulation(epsilon, debug=False):
              tab_done
              
     va_jeu= observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, vie
-    observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, vie = fa.take_action(action+1, va_jeu)
+    observation, Coord, Gomme, tour, points, peur, peurs, killstreak, catch, new_vie = fa.take_action(action+1, va_jeu)
     img1,img2=green_scale(observation[0]), green_scale(observation[1]) 
     
     tab_sequence=[img1,img2]
@@ -188,7 +203,7 @@ def train_step(reward, action, observation, next_observation, done):
   with tf.GradientTape() as tape:
     all_Q_values=model(observation)
     Q_values=tf.reduce_sum(all_Q_values*mask, axis=1, keepdims=True)
-    #on a gardé que Q(s,a) où a est l'acton qui a été prise ?
+    #on a gardé que Q(s,a) où a est l'action opti
     loss=model.loss(target_Q_values, Q_values)
     model.metrics[0].update_state(target_Q_values, Q_values)
   gradients=tape.gradient(loss, model.trainable_variables)
@@ -201,6 +216,7 @@ def train_step(reward, action, observation, next_observation, done):
 def train(debug=False):
   global epsilon, best_score
   for e in range(epoch):
+    tab_win.append(0)  
     for i in range(nbr_jeu):
       print("Epoch {:04d}/{:05d} epsilon={:05.3f}".format(i, e, epsilon))
       tab_observations, tab_rewards, tab_actions, tab_next_observations, tab_done=simulation(epsilon, debug=True)
@@ -211,30 +227,33 @@ def train(debug=False):
         print("  Entrainement {:5.3f} seconde(s)".format(float(time.time()-start_time)))
         print("     loss: {:6.4f}".format(train_loss.result()))
       tab_loss.append( train_loss.result().numpy() )
-      np.save(file_loss,tab_loss)
+
       train_loss.reset_state()
       tab_accuracy.append(model.metrics[0].result().numpy())
       model.metrics[0].reset_state()
-      np.save(file_accuracy,tab_accuracy)
+      
 
-    epsilon-=epsilon_decay_value
+    epsilon*=epsilon_decay_value
     epsilon=max(epsilon, epsilon_min)
-    np.save(file_score, tab_s)
-
+    np.save(file_epsilon2, epsilon)
+    np.save(file_score2, tab_s)
+    np.save(file_accuracy2,tab_accuracy)
+    np.save(file_loss2,tab_loss)
+    np.save(file_win2,tab_win)
     if np.mean(tab_s[-200:])>best_score: #on regarde les 200 derniers scores -> optimisable ?
       print("Sauvegarde du modele")
-      model.save(file_model,model)
+      model.save(file_model2,model)
       best_score=np.mean(tab_s[-200:])
-      np.save(file_best_score, best_score)
+      np.save(file_best_score2, best_score)
   
-    np.save(file_epsilon, epsilon)
+    
 
 
 
 train_loss = tf.keras.metrics.Mean(name='train_loss')
 
 ###########  Pour 1er training :  ################
-
+"""
 model=model(16) 
 adam=tf.keras.optimizers.Adam(learning_rate=0.0001)
 my_loss= tf.keras.losses.MeanSquaredError()
@@ -242,24 +261,28 @@ accuracy_metric= tf.keras.metrics.MeanAbsolutePercentageError()
 
 model.compile(optimizer=adam,
               loss=my_loss, #erreur quadratique,
-              metrics=[accuracy_metric]) #moyenne de |y-q|
+              metrics=[accuracy_metric]) 
          
-
+"""
 
 #############################################
 
 
 
 #########  Pour poursuivre l'entrainement :  #############
-"""
-model=tf.keras.models.load_model(file_model)
 
-tab_s=np.load(file_score).tolist()
-tab_loss=np.load(file_loss).tolist()
-tab_accuracy=np.load(file_accuracy)
-best_score=np.load(file_best_score)
-epsilon=np.load(file_epsilon)
-"""
+model=tf.keras.models.load_model(file_model2)
+
+
+
+best_score=np.load(file_best_score2)
+tab_s=np.load(file_score2).tolist()
+tab_loss=np.load(file_loss2).tolist()
+tab_accuracy=np.load(file_accuracy2).tolist()
+tab_win=np.load(file_win2).tolist()
+epsilon=np.load(file_epsilon2)
+
+
 #############################################
 
 
@@ -271,22 +294,23 @@ train(debug=True)
 
 plt.figure()
 plt.plot([game for game in range(len(tab_s))], tab_s)
-plt.title('tab_score1')
-plt.savefig('tab_score1.png') 
+plt.title('tab_score2')
+plt.savefig('tab_score2.png') 
 plt.show()
 plt.close()  
 
 
 plt.figure()
 plt.plot([game for game in range(len(tab_loss))], tab_loss)
-plt.title('tab_loss1')
-plt.savefig('tab_loss1.png')
+plt.title('tab_loss2')
+plt.savefig('tab_loss2.png')
 plt.show()
+plt.close()
 
 plt.figure()
 plt.plot([game for game in range(len(tab_accuracy))], tab_accuracy)
-plt.title('tab_accuracy1')
-plt.savefig('tab_accuracy1.png')
+plt.title('tab_accuracy2')
+plt.savefig('tab_accuracy2.png')
 plt.show()
 
 
