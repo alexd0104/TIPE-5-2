@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 21 14:38:29 2024
-
-@author: alexf
-"""
-
 
 
 import tensorflow as tf
