@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun 22 09:43:28 2024
-
-@author: alexf
-"""
-
 
 import pygame
 import map_to_graphe as vg
