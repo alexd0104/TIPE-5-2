@@ -24,7 +24,7 @@ dijkstra = open('Dijkstra.txt','r')
 dijkstra = dijkstra.read()
 dijkstra = ast.literal_eval(dijkstra)
 
-dijkstra_sans_direction = open('Dijkstra_sans_direction.txt','r')
+dijkstra_sans_direction = open('Dijkstra_without_direction.txt','r')
 dijkstra_sans_direction = dijkstra_sans_direction.read()
 dijkstra_sans_direction = ast.literal_eval(dijkstra_sans_direction)
 
