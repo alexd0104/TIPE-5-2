@@ -10,7 +10,7 @@ Created on Wed Mar 27 14:33:38 2024
 import time
 import pygame
 import ville_to_graphe as vg
-import fonctions_de_graphes_TIPE as fg
+import graph_function as fg
 import copy
 import random
 import matplotlib.pyplot as plt
