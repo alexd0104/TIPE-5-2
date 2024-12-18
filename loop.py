@@ -7,8 +7,8 @@ Created on Sat Feb 24 15:12:58 2024
 
 import time
 import pygame
-import ville_to_graphe as vg
-import fonctions_de_graphes_TIPE as fg
+import city_to_graph as vg
+import graph_function as fg
 import copy
 import random
 from PIL import Image, ImageSequence
