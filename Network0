@@ -6,7 +6,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import Pac_man_final0 as fa
-import recompenses as rw
+import rewards as rw
 
 
 bareme=1 #choix des récompenses
